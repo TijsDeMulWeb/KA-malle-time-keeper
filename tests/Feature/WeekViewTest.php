@@ -142,16 +142,6 @@ class WeekViewTest extends TestCase
         $this->assertSame('00:30', $days[2]['blocks'][0]['startLabel']);
     }
 
-    public function test_live_percentage(): void
-    {
-        $this->entry('2026-11-16 09:00:00', '2026-11-16 10:00:00', ['is_live' => true]);
-        $this->entry('2026-11-16 11:00:00', '2026-11-16 14:00:00', ['is_live' => false]);
-
-        $week = $this->week('2026-11-16');
-
-        $this->assertSame(25, $week->livePercentage());
-    }
-
     public function test_entries_of_other_users_are_not_shown(): void
     {
         TimeEntry::factory()->create([

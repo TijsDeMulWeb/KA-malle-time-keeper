@@ -108,7 +108,7 @@ new #[Title('Rapport')] class extends Component {
         </div>
     @endif
 
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-4 sm:grid-cols-3">
         <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-test="tile-total">
             <flux:text size="sm">{{ __('Totaal in deze periode') }}</flux:text>
             <div class="mt-1 text-2xl font-semibold">{{ Duration::format($this->report->totalMinutes()) }}</div>
@@ -136,13 +136,6 @@ new #[Title('Rapport')] class extends Component {
             @endif
         </div>
 
-        <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-test="tile-live">
-            <flux:text size="sm">{{ __('Live getimed') }}</flux:text>
-            <div class="mt-1 text-2xl font-semibold">{{ $this->report->livePercentage() }}%</div>
-            <flux:text size="sm" class="text-amber-600! dark:text-amber-400!">
-                {{ $this->report->afterTheFactCount() }} {{ __('registraties achteraf ingegeven') }}
-            </flux:text>
-        </div>
     </div>
 
     <div class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700" data-test="weekly-chart">

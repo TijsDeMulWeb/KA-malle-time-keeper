@@ -68,24 +68,6 @@ class WeekView
         return $this->entries()->sum(fn (TimeEntry $entry) => $this->minutesInWeek($entry));
     }
 
-    public function liveMinutes(): int
-    {
-        return $this->entries()
-            ->filter(fn (TimeEntry $entry) => $entry->is_live)
-            ->sum(fn (TimeEntry $entry) => $this->minutesInWeek($entry));
-    }
-
-    public function livePercentage(): int
-    {
-        $total = $this->totalMinutes();
-
-        if ($total === 0) {
-            return 0;
-        }
-
-        return (int) round($this->liveMinutes() / $total * 100);
-    }
-
     /** @return Collection<string, Collection<int, TimeEntry>> */
     public function entriesByDay(): Collection
     {

@@ -99,7 +99,7 @@ class ReportTest extends TestCase
         $this->assertSame('3 november 2026 tot en met 22 november 2026', $period->label());
     }
 
-    public function test_totals_average_and_live_share(): void
+    public function test_totals_and_average(): void
     {
         $this->seedData();
 
@@ -108,8 +108,6 @@ class ReportTest extends TestCase
         $this->assertSame(360, $report->totalMinutes());
         $this->assertSame(3, $report->count());
         $this->assertSame(40, $report->averageMinutesPerWeek());
-        $this->assertSame(50, $report->livePercentage());
-        $this->assertSame(2, $report->afterTheFactCount());
         $this->assertSame(360, $report->courseMinutes());
     }
 
@@ -181,7 +179,6 @@ class ReportTest extends TestCase
     {
         $report = new Report($this->user, ReportPeriod::resolve($this->user, 'course'));
 
-        $this->assertSame(0, $report->livePercentage());
         $this->assertSame(1, $report->axis()['max']);
         $this->assertSame([], $report->perProject());
     }

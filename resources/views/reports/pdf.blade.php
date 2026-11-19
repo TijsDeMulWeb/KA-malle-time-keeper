@@ -27,7 +27,6 @@
         <tr>
             <td class="tile"><div class="muted">Totaal</div><div class="value">{{ App\Support\Duration::format($report->totalMinutes()) }}</div><div class="muted">{{ $report->count() }} registraties</div></td>
             <td class="tile"><div class="muted">Gemiddeld per week</div><div class="value">{{ App\Support\Duration::format($report->averageMinutesPerWeek()) }}</div><div class="muted">doel {{ App\Support\Duration::format($user->weekly_goal_minutes) }} per week</div></td>
-            <td class="tile"><div class="muted">Live getimed</div><div class="value">{{ $report->livePercentage() }}%</div><div class="muted">{{ $report->afterTheFactCount() }} achteraf ingegeven</div></td>
         </tr>
     </table>
 

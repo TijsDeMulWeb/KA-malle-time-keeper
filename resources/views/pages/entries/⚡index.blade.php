@@ -149,10 +149,6 @@ new #[Title('Mijn uren')] class extends Component {
                 </div>
             </div>
 
-            <div class="text-sm" data-test="live-percentage">
-                <div class="font-semibold">{{ $this->weekView->livePercentage() }}%</div>
-                <div class="text-zinc-500">{{ __('live getimed') }}</div>
-            </div>
 
             <flux:radio.group wire:model.live="mode" variant="segmented">
                 <flux:radio value="calendar" icon="calendar-days" :label="__('Kalender')" />

@@ -44,29 +44,6 @@ class Report
         return $this->entries()->sum(fn (TimeEntry $entry) => $entry->durationInMinutes());
     }
 
-    public function liveMinutes(): int
-    {
-        return $this->entries()
-            ->filter(fn (TimeEntry $entry) => $entry->is_live)
-            ->sum(fn (TimeEntry $entry) => $entry->durationInMinutes());
-    }
-
-    public function livePercentage(): int
-    {
-        $total = $this->totalMinutes();
-
-        if ($total === 0) {
-            return 0;
-        }
-
-        return (int) round($this->liveMinutes() / $total * 100);
-    }
-
-    public function afterTheFactCount(): int
-    {
-        return $this->entries()->reject(fn (TimeEntry $entry) => $entry->is_live)->count();
-    }
-
     public function averageMinutesPerWeek(): int
     {
         $weeks = count($this->period->weekStarts());

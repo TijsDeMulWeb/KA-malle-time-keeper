@@ -87,16 +87,6 @@ class EntriesPageTest extends TestCase
             ->assertSeeHtml('width: 50%');
     }
 
-    public function test_live_percentage_is_shown(): void
-    {
-        $this->entry('2026-11-16 09:00:00', '2026-11-16 10:00:00', 'Live', ['is_live' => true]);
-        $this->entry('2026-11-16 11:00:00', '2026-11-16 14:00:00', 'Achteraf', ['is_live' => false]);
-
-        Livewire::test('pages::entries.index')
-            ->assertSee('25%')
-            ->assertSee('live getimed');
-    }
-
     public function test_list_view_groups_entries_by_day(): void
     {
         $this->entry('2026-11-16 13:10:00', '2026-11-16 14:35:00', 'SSO launcher gemaakt');
