@@ -141,7 +141,7 @@ new #[Title('Mijn uren')] class extends Component {
             @forelse ($this->listDays() as $day)
                 <section wire:key="list-day-{{ $loop->index }}" class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
                     <header class="flex items-center justify-between bg-zinc-50 px-4 py-2.5 dark:bg-zinc-900">
-                        <span class="font-medium capitalize">{{ $day['label'] }}</span>
+                        <span class="font-medium first-letter:uppercase">{{ $day['label'] }}</span>
                         <span class="text-sm text-zinc-500">{{ Duration::format($day['total']) }}</span>
                     </header>
 
@@ -205,7 +205,7 @@ new #[Title('Mijn uren')] class extends Component {
                     style="height: {{ $this->weekView->gridHeight() }}px"
                 >
                     <div class="relative">
-                        <div class="scroll-initial-target absolute h-px w-px" style="top: {{ 8 * $this->weekView->pixelsPerHour + 576 }}px"></div>
+                        <div class="scroll-initial-target absolute h-px w-px" style="top: {{ 8 * $this->weekView->pixelsPerHour - 10 }}px"></div>
 
                         @foreach (range(0, 23) as $hour)
                             <div
