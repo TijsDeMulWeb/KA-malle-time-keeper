@@ -195,14 +195,14 @@ new #[Title('Mijn uren')] class extends Component {
             @endforelse
         </div>
     @else
-        <div wire:poll.60s class="flex min-h-96 flex-1 flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700" data-test="calendar" data-calendar data-pixels-per-hour="{{ $this->weekView->pixelsPerHour }}">
-            <div class="grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))] border-b border-zinc-200 dark:border-zinc-700">
+        <div wire:poll.60s class="flex h-[75dvh] flex-col overflow-hidden rounded-xl border lg:h-auto lg:min-h-96 lg:flex-1 border border-zinc-200 dark:border-zinc-700" data-test="calendar" data-calendar data-pixels-per-hour="{{ $this->weekView->pixelsPerHour }}">
+            <div class="grid grid-cols-[2.5rem_repeat(7,minmax(0,1fr))] sm:grid-cols-[3.5rem_repeat(7,minmax(0,1fr))] border-b border-zinc-200 dark:border-zinc-700">
                 <div></div>
                 @foreach ($this->weekView->days() as $day)
                     <div
                         wire:key="day-head-{{ $loop->index }}"
                         @class([
-                            'border-s border-zinc-200 px-3 py-2 dark:border-zinc-700',
+                            'border-s border-zinc-200 px-1 py-2 sm:px-3 dark:border-zinc-700',
                             'bg-sky-50 dark:bg-sky-950/30' => $day['isToday'],
                         ])
                     >
@@ -210,14 +210,14 @@ new #[Title('Mijn uren')] class extends Component {
                             <span class="uppercase text-zinc-500">{{ $day['date']->translatedFormat('D') }}</span>
                             <span @class(['font-semibold', 'text-sky-600 dark:text-sky-400' => $day['isToday']])>{{ $day['date']->day }}</span>
                         </div>
-                        <div class="text-xs text-zinc-500" data-test="day-total">{{ Duration::format($day['totalMinutes']) }}</div>
+                        <div class="whitespace-nowrap text-[10px] text-zinc-500 sm:text-xs" data-test="day-total">{{ Duration::format($day['totalMinutes']) }}</div>
                     </div>
                 @endforeach
             </div>
 
             <div class="min-h-0 flex-1 overflow-y-auto">
                 <div
-                    class="relative grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))]"
+                    class="relative grid grid-cols-[2.5rem_repeat(7,minmax(0,1fr))] sm:grid-cols-[3.5rem_repeat(7,minmax(0,1fr))]"
                     style="height: {{ $this->weekView->gridHeight() }}px"
                 >
                     <div class="relative">
@@ -225,7 +225,7 @@ new #[Title('Mijn uren')] class extends Component {
 
                         @foreach (range(0, 23) as $hour)
                             <div
-                                class="absolute end-2 -translate-y-1/2 text-xs tabular-nums text-zinc-500"
+                                class="absolute end-1 -translate-y-1/2 text-[10px] tabular-nums text-zinc-500 sm:end-2 sm:text-xs"
                                 style="top: {{ $hour * $this->weekView->pixelsPerHour }}px"
                             >
                                 @if ($hour > 0){{ sprintf('%02d:00', $hour) }}@endif

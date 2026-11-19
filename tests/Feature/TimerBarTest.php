@@ -40,7 +40,6 @@ class TimerBarTest extends TestCase
 
         $entry = TimeEntry::first();
 
-        $this->assertTrue($entry->is_live);
         $this->assertNull($entry->ended_at);
         $this->assertSame('Testing SSO', $entry->description);
         $this->assertSame('2026-11-19 20:00:30', $entry->started_at->format('Y-m-d H:i:s'));

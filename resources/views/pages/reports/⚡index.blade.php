@@ -81,14 +81,14 @@ new #[Title('Rapport')] class extends Component {
             <flux:subheading data-test="period-label">{{ $this->report->period()->label() }}</flux:subheading>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3">
-            <flux:button.group>
+        <div class="flex max-w-full flex-wrap items-center gap-3">
+            <div class="max-w-full overflow-x-auto"><flux:button.group>
                 <flux:button wire:click="choose('week')" :variant="$filter === 'week' ? 'filled' : 'ghost'" size="sm">{{ __('Deze week') }}</flux:button>
                 <flux:button wire:click="choose('last-week')" :variant="$filter === 'last-week' ? 'filled' : 'ghost'" size="sm">{{ __('Vorige week') }}</flux:button>
                 <flux:button wire:click="choose('month')" :variant="$filter === 'month' ? 'filled' : 'ghost'" size="sm">{{ __('Deze maand') }}</flux:button>
                 <flux:button wire:click="choose('course')" :variant="$filter === 'course' ? 'filled' : 'ghost'" size="sm">{{ __('Hele vak') }}</flux:button>
                 <flux:button wire:click="choose('custom')" :variant="$filter === 'custom' ? 'filled' : 'ghost'" size="sm">{{ __('Aangepast') }}</flux:button>
-            </flux:button.group>
+            </flux:button.group></div>
 
             <flux:dropdown align="end">
                 <flux:button icon="arrow-down-tray" icon:trailing="chevron-down" size="sm">{{ __('Exporteren') }}</flux:button>
@@ -108,7 +108,7 @@ new #[Title('Rapport')] class extends Component {
         </div>
     @endif
 
-    <div class="grid gap-4 sm:grid-cols-3">
+    <div class="grid gap-4 sm:grid-cols-2">
         <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-test="tile-total">
             <flux:text size="sm">{{ __('Totaal in deze periode') }}</flux:text>
             <div class="mt-1 text-2xl font-semibold">{{ Duration::format($this->report->totalMinutes()) }}</div>
@@ -120,10 +120,6 @@ new #[Title('Rapport')] class extends Component {
             <div class="mt-1 text-2xl font-semibold">{{ Duration::format($this->report->averageMinutesPerWeek()) }}</div>
         </div>
 
-        <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-test="tile-course">
-            <flux:text size="sm">{{ __('Hele vak') }}</flux:text>
-            <div class="mt-1 text-2xl font-semibold">{{ Duration::format($this->report->courseMinutes()) }}</div>
-        </div>
 
     </div>
 

@@ -141,8 +141,10 @@ new class extends Component {
                 </flux:select>
             </div>
 
-            <div class="grid grid-cols-3 gap-4">
-                <flux:input wire:model.live.blur="form.date" type="date" :label="__('Datum')" />
+            <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                <div class="col-span-2 sm:col-span-1">
+                    <flux:input wire:model.live.blur="form.date" type="date" :label="__('Datum')" />
+                </div>
                 <flux:input wire:model.live.blur="form.start" type="time" :label="__('Van')" />
                 <flux:input wire:model.live.blur="form.end" type="time" :label="__('Tot')" />
             </div>

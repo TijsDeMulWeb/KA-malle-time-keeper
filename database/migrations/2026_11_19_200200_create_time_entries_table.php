@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('description');
             $table->timestamp('started_at');
             $table->timestamp('ended_at')->nullable();
-            $table->boolean('is_live')->default(false);
             $table->timestamps();
 
             $table->index(['user_id', 'started_at']);

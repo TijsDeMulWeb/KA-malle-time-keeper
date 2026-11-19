@@ -21,9 +21,8 @@ use Illuminate\Support\Carbon;
  * @property string $description
  * @property Carbon $started_at
  * @property Carbon|null $ended_at
- * @property bool $is_live
  */
-#[Fillable(['user_id', 'project_id', 'category_id', 'description', 'started_at', 'ended_at', 'is_live'])]
+#[Fillable(['user_id', 'project_id', 'category_id', 'description', 'started_at', 'ended_at'])]
 class TimeEntry extends Model
 {
     /** @use HasFactory<TimeEntryFactory> */
@@ -34,7 +33,6 @@ class TimeEntry extends Model
         return [
             'started_at' => 'datetime',
             'ended_at' => 'datetime',
-            'is_live' => 'boolean',
         ];
     }
 

@@ -23,7 +23,6 @@ class TimeEntryFactory extends Factory
             'description' => fake()->sentence(3),
             'started_at' => $startedAt,
             'ended_at' => $startedAt->copy()->addMinutes(fake()->randomElement([30, 60, 90, 120])),
-            'is_live' => false,
         ];
     }
 
@@ -32,7 +31,6 @@ class TimeEntryFactory extends Factory
         return $this->state(fn () => [
             'started_at' => now()->subMinutes(10),
             'ended_at' => null,
-            'is_live' => true,
         ]);
     }
 }

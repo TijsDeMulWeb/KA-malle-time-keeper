@@ -47,7 +47,6 @@ class EntryModalTest extends TestCase
         $this->assertSame('2026-11-18 10:00:00', $entry->ended_at->format('Y-m-d H:i:s'));
         $this->assertSame('10:00', $entry->localStartedAt()->format('H:i'));
         $this->assertSame($category->id, $entry->category_id);
-        $this->assertFalse($entry->is_live);
     }
 
     public function test_the_category_is_optional(): void

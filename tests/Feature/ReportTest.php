@@ -53,7 +53,7 @@ class ReportTest extends TestCase
         $development = Category::factory()->create(['name' => 'Development']);
         $testing = Category::factory()->create(['name' => 'Testing']);
 
-        $this->entry($this->launcher, '2026-11-10 09:00:00', '2026-11-10 12:00:00', ['category_id' => $development->id, 'is_live' => true]);
+        $this->entry($this->launcher, '2026-11-10 09:00:00', '2026-11-10 12:00:00', ['category_id' => $development->id]);
         $this->entry($this->launcher, '2026-11-17 09:00:00', '2026-11-17 10:30:00', ['category_id' => $testing->id]);
         $this->entry($this->fablab, '2026-11-19 08:00:00', '2026-11-19 09:30:00');
     }
@@ -107,7 +107,6 @@ class ReportTest extends TestCase
         $this->assertSame(360, $report->totalMinutes());
         $this->assertSame(3, $report->count());
         $this->assertSame(40, $report->averageMinutesPerWeek());
-        $this->assertSame(360, $report->courseMinutes());
     }
 
     public function test_weeks_are_stacked_per_project(): void

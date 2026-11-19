@@ -51,19 +51,6 @@ class Report
         return $weeks === 0 ? 0 : intdiv($this->totalMinutes(), $weeks);
     }
 
-    public function courseMinutes(): int
-    {
-        return $this->user->timeEntries()
-            ->when($this->user->period_starts_on, function ($query, $start) {
-                $query->where('started_at', '>=', LocalTime::parse($start->format('Y-m-d'))->utc());
-            })
-            ->when($this->user->period_ends_on, function ($query, $end) {
-                $query->where('started_at', '<', LocalTime::parse($end->format('Y-m-d'))->addDay()->utc());
-            })
-            ->get(['started_at', 'ended_at'])
-            ->sum(fn (TimeEntry $entry) => $entry->durationInMinutes());
-    }
-
     /** @return array<int, array{start: CarbonImmutable, label: string, total: int, segments: array<int, array{project: Project, minutes: int}>}> */
     public function weeks(): array
     {
