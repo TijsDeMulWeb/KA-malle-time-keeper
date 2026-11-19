@@ -5,6 +5,7 @@ use App\Models\Category;
 use App\Models\Project;
 use App\Models\TimeEntry;
 use App\Support\LocalTime;
+use Flux\Flux;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -23,6 +24,14 @@ new class extends Component {
         if ($entry) {
             $timeEntry = auth()->user()->timeEntries()->findOrFail($entry);
 
+            $restriction = auth()->user()->timeLoggingRestriction($timeEntry->started_at);
+
+            if ($restriction) {
+                Flux::toast(variant: 'warning', text: $restriction);
+
+                return;
+            }
+
             $this->authorize('update', $timeEntry);
 
             $this->form->fillFrom($timeEntry);
@@ -32,6 +41,14 @@ new class extends Component {
         }
 
         $this->authorize('create', TimeEntry::class);
+
+        $restriction = auth()->user()->timeLoggingRestriction(LocalTime::parse($date ?? LocalTime::now()->format('Y-m-d')));
+
+        if ($restriction) {
+            Flux::toast(variant: 'warning', text: $restriction);
+
+            return;
+        }
 
         $startTime = $start ?? LocalTime::now()->startOfHour()->format('H:i');
         $endTime = $end ?? LocalTime::parse('2000-01-01', $startTime)->addHour()->format('H:i');
@@ -82,7 +99,7 @@ new class extends Component {
     #[Computed]
     public function projects(): Collection
     {
-        return auth()->user()->projects()
+        return Project::availableTo(auth()->user())
             ->where(function ($query) {
                 $query->whereNull('archived_at')
                     ->orWhere('id', $this->form->entry?->project_id);

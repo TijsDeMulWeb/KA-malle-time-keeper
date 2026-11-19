@@ -1,16 +1,20 @@
 <?php
 
+use App\Models\SchoolYear;
+use App\Models\User;
 use App\Support\Duration;
 use App\Support\Report;
 use App\Support\ReportPeriod;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
 new #[Title('Rapport')] class extends Component {
     #[Url(as: 'periode')]
-    public string $filter = 'course';
+    public string $filter = 'year';
 
     #[Url(as: 'van')]
     public string $from = '';
@@ -18,10 +22,20 @@ new #[Title('Rapport')] class extends Component {
     #[Url(as: 'tot')]
     public string $until = '';
 
-    public function mount(): void
+    #[Url(as: 'jaar')]
+    public string $schoolYearId = '';
+
+    #[Locked]
+    public User $subject;
+
+    public function mount(?User $user = null): void
     {
+        $this->subject = $user ?? auth()->user();
+
+        $this->authorize('view', $this->subject);
+
         if (! in_array($this->filter, ReportPeriod::$filters, true)) {
-            $this->filter = 'course';
+            $this->filter = 'year';
         }
     }
 
@@ -33,12 +47,37 @@ new #[Title('Rapport')] class extends Component {
 
         $this->filter = $filter;
 
+        if ($filter !== 'year') {
+            $this->schoolYearId = '';
+        }
+
         if ($filter === 'custom' && $this->from === '') {
-            $this->from = ReportPeriod::resolve(auth()->user(), 'week')->from->format('Y-m-d');
-            $this->until = ReportPeriod::resolve(auth()->user(), 'week')->until->subDay()->format('Y-m-d');
+            $this->from = ReportPeriod::resolve($this->subject, 'week')->from->format('Y-m-d');
+            $this->until = ReportPeriod::resolve($this->subject, 'week')->until->subDay()->format('Y-m-d');
         }
 
         unset($this->report);
+    }
+
+    public function updatedSchoolYearId(): void
+    {
+        $this->filter = 'year';
+
+        unset($this->report);
+    }
+
+    #[Computed]
+    public function schoolYears(): Collection
+    {
+        return SchoolYear::whereHas('schoolClasses.students', fn ($query) => $query->whereKey($this->subject->id))
+            ->orderByDesc('starts_on')
+            ->get();
+    }
+
+    #[Computed]
+    public function selectedSchoolYear(): ?SchoolYear
+    {
+        return $this->schoolYears->firstWhere('id', (int) $this->schoolYearId);
     }
 
     public function updatedFrom(): void
@@ -58,9 +97,23 @@ new #[Title('Rapport')] class extends Component {
     #[Computed]
     public function report(): Report
     {
-        $period = ReportPeriod::resolve(auth()->user(), $this->filter, $this->from, $this->until);
+        $period = ReportPeriod::resolve($this->subject, $this->filter, $this->from, $this->until, $this->selectedSchoolYear);
 
-        return new Report(auth()->user(), $period);
+        return new Report($this->subject, $period);
+    }
+
+    public function isViewingSomeoneElse(): bool
+    {
+        return ! $this->subject->is(auth()->user());
+    }
+
+    public function exportUrl(string $format): string
+    {
+        if ($this->isViewingSomeoneElse()) {
+            return route("admin.users.reports.export.{$format}", ['user' => $this->subject, ...$this->exportParameters()]);
+        }
+
+        return route("reports.export.{$format}", $this->exportParameters());
     }
 
     /** @return array<string, string> */
@@ -70,6 +123,7 @@ new #[Title('Rapport')] class extends Component {
             'periode' => $this->filter,
             'van' => $this->filter === 'custom' ? $this->from : null,
             'tot' => $this->filter === 'custom' ? $this->until : null,
+            'jaar' => $this->filter === 'year' && $this->schoolYearId !== '' ? $this->schoolYearId : null,
         ]);
     }
 }; ?>
@@ -77,7 +131,12 @@ new #[Title('Rapport')] class extends Component {
 <div class="mx-auto w-full max-w-6xl space-y-6">
     <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-            <flux:heading size="xl" level="1">{{ __('Rapport') }}</flux:heading>
+            @if($this->isViewingSomeoneElse())
+                <flux:link :href="route('admin.users.index')" variant="subtle" class="text-sm" wire:navigate>&larr; {{ __('Gebruikers') }}</flux:link>
+                <flux:heading size="xl" level="1" data-test="report-subject">{{ $subject->name }}</flux:heading>
+            @else
+                <flux:heading size="xl" level="1">{{ __('Rapport') }}</flux:heading>
+            @endif
             <flux:subheading data-test="period-label">{{ $this->report->period()->label() }}</flux:subheading>
         </div>
 
@@ -86,16 +145,34 @@ new #[Title('Rapport')] class extends Component {
                 <flux:button wire:click="choose('week')" :variant="$filter === 'week' ? 'filled' : 'ghost'" size="sm">{{ __('Deze week') }}</flux:button>
                 <flux:button wire:click="choose('last-week')" :variant="$filter === 'last-week' ? 'filled' : 'ghost'" size="sm">{{ __('Vorige week') }}</flux:button>
                 <flux:button wire:click="choose('month')" :variant="$filter === 'month' ? 'filled' : 'ghost'" size="sm">{{ __('Deze maand') }}</flux:button>
-                <flux:button wire:click="choose('course')" :variant="$filter === 'course' ? 'filled' : 'ghost'" size="sm">{{ __('Hele vak') }}</flux:button>
+                <flux:button wire:click="choose('year')" :variant="$filter === 'year' ? 'filled' : 'ghost'" size="sm">{{ __('Schooljaar') }}</flux:button>
                 <flux:button wire:click="choose('custom')" :variant="$filter === 'custom' ? 'filled' : 'ghost'" size="sm">{{ __('Aangepast') }}</flux:button>
             </flux:button.group></div>
+
+            @if($filter === 'year' && $this->schoolYears->count() > 1)
+                <flux:select wire:model.live="schoolYearId" size="sm" class="w-40" data-test="school-year-filter">
+                    <flux:select.option value="">{{ __('Huidig schooljaar') }}</flux:select.option>
+                    @foreach($this->schoolYears as $schoolYear)
+                        <flux:select.option :value="$schoolYear->id">{{ $schoolYear->name }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            @endif
+
+            @if($this->isViewingSomeoneElse())
+                @can('impersonate', $subject)
+                    <form method="POST" action="{{ route('admin.users.impersonate', $subject) }}">
+                        @csrf
+                        <flux:button type="submit" icon="eye" size="sm" data-test="impersonate">{{ __('Bekijk als student') }}</flux:button>
+                    </form>
+                @endcan
+            @endif
 
             <flux:dropdown align="end">
                 <flux:button icon="arrow-down-tray" icon:trailing="chevron-down" size="sm">{{ __('Exporteren') }}</flux:button>
 
                 <flux:menu>
-                    <flux:menu.item icon="table-cells" :href="route('reports.export.csv', $this->exportParameters())" data-test="export-csv">CSV</flux:menu.item>
-                    <flux:menu.item icon="document-text" :href="route('reports.export.pdf', $this->exportParameters())" data-test="export-pdf">PDF</flux:menu.item>
+                    <flux:menu.item icon="table-cells" :href="$this->exportUrl('csv')" data-test="export-csv">CSV</flux:menu.item>
+                    <flux:menu.item icon="document-text" :href="$this->exportUrl('pdf')" data-test="export-pdf">PDF</flux:menu.item>
                 </flux:menu>
             </flux:dropdown>
         </div>

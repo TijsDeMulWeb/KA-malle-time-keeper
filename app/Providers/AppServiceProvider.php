@@ -2,9 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\SchoolClass;
+use App\Models\SchoolYear;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        Route::model('user', User::class);
+        Route::model('schoolYear', SchoolYear::class);
+        Route::model('schoolClass', SchoolClass::class);
     }
 
     /**

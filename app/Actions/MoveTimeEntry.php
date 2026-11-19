@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\TimeEntry;
 use App\Models\User;
+use App\Rules\LoggableDate;
 use App\Support\LocalTime;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -15,7 +16,7 @@ class MoveTimeEntry
         Validator::make(
             ['date' => $date, 'start' => $start, 'end' => $end],
             [
-                'date' => ['required', 'date_format:Y-m-d'],
+                'date' => ['required', 'date_format:Y-m-d', new LoggableDate($user)],
                 'start' => ['required', 'date_format:H:i'],
                 'end' => ['required', 'regex:/^([01]\d|2[0-3]):[0-5]\d$|^24:00$/', 'after:start'],
             ],

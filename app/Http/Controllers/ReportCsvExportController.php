@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ReportExportRequest;
 use App\Models\TimeEntry;
 use App\Support\Duration;
+use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -28,11 +29,12 @@ class ReportCsvExportController extends Controller
 
         $from = $report->period()->from->format('Y-m-d');
         $until = $report->period()->until->subDay()->format('Y-m-d');
+        $name = Str::slug($request->subject()->name);
 
         return response()->streamDownload(function () use ($rows) {
             SimpleExcelWriter::create('php://output', 'csv')
                 ->addRows($rows->all())
                 ->close();
-        }, "uren-{$from}-{$until}.csv", ['Content-Type' => 'text/csv; charset=UTF-8']);
+        }, "uren-{$name}-{$from}-{$until}.csv", ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 }

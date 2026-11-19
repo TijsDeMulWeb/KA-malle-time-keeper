@@ -1,5 +1,7 @@
 <x-layouts::app.sidebar :title="$title ?? null">
     <flux:main class="flex flex-col lg:h-dvh">
+        <x-view-mode-banner />
+
         <livewire:timer-bar />
 
         <div class="flex min-h-0 flex-1 flex-col lg:overflow-y-auto">

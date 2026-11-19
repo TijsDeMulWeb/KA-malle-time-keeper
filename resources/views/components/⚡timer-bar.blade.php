@@ -3,9 +3,9 @@
 use App\Models\Category;
 use App\Models\Project;
 use App\Models\TimeEntry;
+use App\Rules\AvailableProject;
 use App\Support\Duration;
 use Illuminate\Support\Collection;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -28,7 +28,7 @@ new class extends Component {
 
         $this->validate([
             'description' => ['nullable', 'string', 'max:255'],
-            'projectId' => ['required', Rule::exists('projects', 'id')->where('user_id', auth()->id())],
+            'projectId' => ['required', new AvailableProject(auth()->user())],
             'categoryId' => ['nullable', 'exists:categories,id'],
         ], attributes: [
             'description' => 'omschrijving',
@@ -41,6 +41,14 @@ new class extends Component {
         }
 
         $startedAt = now();
+
+        $restriction = auth()->user()->timeLoggingRestriction($startedAt);
+
+        if ($restriction) {
+            $this->addError('description', $restriction);
+
+            return;
+        }
 
         $overlaps = auth()->user()->timeEntries()->overlapping($startedAt, $startedAt->copy()->addMinute())->exists();
 
@@ -94,7 +102,7 @@ new class extends Component {
     #[Computed]
     public function projects(): Collection
     {
-        return auth()->user()->projects()->active()->orderBy('name')->get();
+        return Project::availableTo(auth()->user())->active()->orderBy('name')->get();
     }
 
     #[Computed]
@@ -117,7 +125,7 @@ new class extends Component {
             ->latest('started_at')
             ->value('project_id');
 
-        return $lastUsed ?? auth()->user()->projects()->active()->orderBy('name')->value('id');
+        return $lastUsed ?? Project::availableTo(auth()->user())->active()->orderBy('name')->value('id');
     }
 }; ?>
 

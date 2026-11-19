@@ -3,12 +3,16 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\ResetUserPassword;
+use App\Http\Middleware\PreventWhileImpersonating;
+use App\Models\User;
 use Illuminate\Auth\Middleware\RequirePassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Fortify;
 use Livewire\Livewire;
 
@@ -40,6 +44,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Livewire::addPersistentMiddleware([
             RequirePassword::class,
+            PreventWhileImpersonating::class,
         ]);
     }
 
@@ -49,6 +54,26 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureActions(): void
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
+
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = User::where('email', Str::lower((string) $request->input(Fortify::username())))->first();
+
+            if (! $user) {
+                return null;
+            }
+
+            if (! Hash::check((string) $request->input('password'), $user->password)) {
+                return null;
+            }
+
+            if (! $user->hasAccess()) {
+                throw ValidationException::withMessages([
+                    Fortify::username() => __('Je zit niet in een klas van een actief schooljaar. Vraag je leerkracht om je toe te voegen.'),
+                ]);
+            }
+
+            return $user;
+        });
     }
 
     /**

@@ -77,6 +77,11 @@ class TimeEntry extends Model
         });
     }
 
+    public function isLocked(): bool
+    {
+        return SchoolYear::isLockedAt($this->started_at);
+    }
+
     public function isRunning(): bool
     {
         return $this->ended_at === null;

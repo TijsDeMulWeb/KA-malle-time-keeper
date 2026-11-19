@@ -13,13 +13,15 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property int $user_id
+ * @property int|null $user_id
+ * @property int|null $school_class_id
+ * @property SchoolClass|null $schoolClass
  * @property string $name
  * @property string|null $client
  * @property string $color
  * @property Carbon|null $archived_at
  */
-#[Fillable(['user_id', 'name', 'client', 'color', 'archived_at'])]
+#[Fillable(['user_id', 'school_class_id', 'name', 'client', 'color', 'archived_at'])]
 class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */
@@ -37,9 +39,22 @@ class Project extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function schoolClass(): BelongsTo
+    {
+        return $this->belongsTo(SchoolClass::class);
+    }
+
     public function timeEntries(): HasMany
     {
         return $this->hasMany(TimeEntry::class);
+    }
+
+    public function scopeAvailableTo(Builder $query, User $user): void
+    {
+        $query->where(function (Builder $query) use ($user) {
+            $query->where('user_id', $user->id)
+                ->orWhereIn('school_class_id', $user->currentSchoolClasses()->select('school_classes.id'));
+        });
     }
 
     public function scopeActive(Builder $query): void
@@ -50,6 +65,11 @@ class Project extends Model
     public function scopeArchived(Builder $query): void
     {
         $query->whereNotNull('archived_at');
+    }
+
+    public function isShared(): bool
+    {
+        return $this->user_id === null;
     }
 
     public function isArchived(): bool

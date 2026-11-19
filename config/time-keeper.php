@@ -3,9 +3,11 @@
 return [
     'timezone' => 'Europe/Brussels',
 
-    'user' => [
-        'name' => env('TIME_KEEPER_USER_NAME', 'Admin'),
-        'email' => env('TIME_KEEPER_USER_EMAIL', 'admin@example.com'),
-        'password' => env('TIME_KEEPER_USER_PASSWORD', 'password'),
+    'admin' => [
+        'name' => env('TIME_KEEPER_ADMIN_NAME', 'Admin'),
+        'email' => env('TIME_KEEPER_ADMIN_EMAIL', 'admin@example.com'),
+        'password' => env('TIME_KEEPER_ADMIN_PASSWORD', 'password'),
     ],
+
+    'invitation_expires_in_days' => 7,
 ];

@@ -1,6 +1,8 @@
 <?php
 
 use App\Actions\MoveTimeEntry;
+use App\Enums\Role;
+use App\Models\SchoolYear;
 use App\Support\Duration;
 use App\Support\LocalTime;
 use App\Support\WeekView;
@@ -56,6 +58,16 @@ new #[Title('Mijn uren')] class extends Component {
     {
         $timeEntry = auth()->user()->timeEntries()->findOrFail($entry);
 
+        $restriction = auth()->user()->timeLoggingRestriction($timeEntry->started_at);
+
+        if ($restriction) {
+            Flux::toast(variant: 'danger', text: $restriction);
+
+            $this->dispatch('entry-move-rejected');
+
+            return;
+        }
+
         $this->authorize('update', $timeEntry);
 
         try {
@@ -79,6 +91,33 @@ new #[Title('Mijn uren')] class extends Component {
         $valid = preg_match('/^\d{4}-\d{2}-\d{2}$/', $this->week) === 1;
 
         return LocalTime::startOfWeek($valid ? $this->week : null);
+    }
+
+    #[Computed]
+    public function closedSchoolYear(): ?SchoolYear
+    {
+        return SchoolYear::closed()
+            ->whereDate('starts_on', '<=', $this->weekStart->addDays(6)->format('Y-m-d'))
+            ->whereDate('ends_on', '>=', $this->weekStart->format('Y-m-d'))
+            ->first();
+    }
+
+    #[Computed]
+    public function isOutsideOwnSchoolYear(): bool
+    {
+        if ($this->closedSchoolYear) {
+            return false;
+        }
+
+        if (! auth()->user()->hasRole(Role::Student->value)) {
+            return false;
+        }
+
+        return ! SchoolYear::open()
+            ->whereHas('schoolClasses.students', fn ($query) => $query->whereKey(auth()->id()))
+            ->whereDate('starts_on', '<=', $this->weekStart->addDays(6)->format('Y-m-d'))
+            ->whereDate('ends_on', '>=', $this->weekStart->format('Y-m-d'))
+            ->exists();
     }
 
     #[Computed]
@@ -151,6 +190,18 @@ new #[Title('Mijn uren')] class extends Component {
             </flux:radio.group>
         </div>
     </div>
+
+    @if($this->closedSchoolYear)
+        <flux:callout icon="lock-closed" variant="secondary" data-test="closed-year-notice">
+            <flux:callout.heading>{{ __('Schooljaar :name is afgesloten', ['name' => $this->closedSchoolYear->name]) }}</flux:callout.heading>
+            <flux:callout.text>{{ __('Je kan de uren uit dit schooljaar nog bekijken, maar niet meer wijzigen.') }}</flux:callout.text>
+        </flux:callout>
+    @elseif($this->isOutsideOwnSchoolYear)
+        <flux:callout icon="calendar" variant="secondary" data-test="outside-school-year-notice">
+            <flux:callout.heading>{{ __('Deze week valt buiten je schooljaar') }}</flux:callout.heading>
+            <flux:callout.text>{{ __('Je kan alleen uren registreren binnen het schooljaar van je klas.') }}</flux:callout.text>
+        </flux:callout>
+    @endif
 
     @if ($mode === 'list')
         <div class="space-y-6" data-test="entry-list">

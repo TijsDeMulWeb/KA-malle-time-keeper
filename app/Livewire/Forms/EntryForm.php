@@ -3,6 +3,8 @@
 namespace App\Livewire\Forms;
 
 use App\Models\TimeEntry;
+use App\Rules\AvailableProject;
+use App\Rules\LoggableDate;
 use App\Support\Duration;
 use App\Support\LocalTime;
 use Illuminate\Validation\Rule;
@@ -30,10 +32,10 @@ class EntryForm extends Form
             'description' => ['required', 'string', 'max:255'],
             'projectId' => [
                 'required',
-                Rule::exists('projects', 'id')->where('user_id', auth()->id()),
+                new AvailableProject(auth()->user()),
             ],
             'categoryId' => ['nullable', 'exists:categories,id'],
-            'date' => ['required', 'date_format:Y-m-d'],
+            'date' => ['required', 'date_format:Y-m-d', new LoggableDate(auth()->user())],
             'start' => ['required', 'date_format:H:i'],
             'end' => [
                 Rule::requiredIf(fn () => ! $this->isRunning()),

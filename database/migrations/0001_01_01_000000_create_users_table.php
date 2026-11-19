@@ -15,9 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('password');
-            $table->date('period_starts_on')->nullable();
-            $table->date('period_ends_on')->nullable();
+            $table->string('password')->nullable();
+            $table->timestamp('invited_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

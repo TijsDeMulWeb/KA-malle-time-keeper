@@ -10,7 +10,8 @@ return new class extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('school_class_id')->nullable()->constrained()->restrictOnDelete();
             $table->string('name');
             $table->string('client')->nullable();
             $table->string('color', 7)->default('#14b8a6');

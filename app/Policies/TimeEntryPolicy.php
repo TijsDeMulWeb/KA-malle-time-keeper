@@ -19,11 +19,15 @@ class TimeEntryPolicy
 
     public function update(User $user, TimeEntry $timeEntry): bool
     {
-        return $timeEntry->user_id === $user->id;
+        if ($timeEntry->user_id !== $user->id) {
+            return false;
+        }
+
+        return $user->canLogTimeOn($timeEntry->started_at);
     }
 
     public function delete(User $user, TimeEntry $timeEntry): bool
     {
-        return $timeEntry->user_id === $user->id;
+        return $this->update($user, $timeEntry);
     }
 }

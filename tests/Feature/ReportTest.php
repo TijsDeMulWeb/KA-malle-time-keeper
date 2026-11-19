@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Project;
+use App\Models\SchoolClass;
+use App\Models\SchoolYear;
 use App\Models\TimeEntry;
 use App\Models\User;
 use App\Support\Report;
@@ -29,10 +31,13 @@ class ReportTest extends TestCase
         app()->setLocale('nl');
         $this->travelTo('2026-11-19 20:52:00');
 
-        $this->user = User::factory()->create([
-            'period_starts_on' => '2026-09-21',
-            'period_ends_on' => '2027-01-24',
+        $schoolYear = SchoolYear::factory()->create([
+            'name' => '2026-2027',
+            'starts_on' => '2026-09-21',
+            'ends_on' => '2027-08-31',
         ]);
+
+        $this->user = User::factory()->student(SchoolClass::factory()->for($schoolYear)->create())->create();
         $this->launcher = Project::factory()->for($this->user)->create(['name' => 'Game Launcher', 'color' => '#14b8a6']);
         $this->fablab = Project::factory()->for($this->user)->create(['name' => 'Fablab Opvolging', 'client' => 'Ivan', 'color' => '#6b7280']);
         $this->actingAs($this->user);
@@ -58,9 +63,9 @@ class ReportTest extends TestCase
         $this->entry($this->fablab, '2026-11-19 08:00:00', '2026-11-19 09:30:00');
     }
 
-    public function test_period_for_the_whole_course_runs_until_the_end_of_this_week(): void
+    public function test_period_for_the_school_year_runs_until_the_end_of_this_week(): void
     {
-        $period = ReportPeriod::resolve($this->user, 'course');
+        $period = ReportPeriod::resolve($this->user, 'year');
 
         $this->assertSame('21 september 2026 tot en met 22 november 2026', $period->label());
         $this->assertCount(9, $period->weekStarts());
@@ -88,12 +93,12 @@ class ReportTest extends TestCase
         $this->assertSame('16 november 2026 tot en met 22 november 2026', $reversed->label());
     }
 
-    public function test_course_without_configured_period_starts_at_the_first_entry(): void
+    public function test_user_without_a_school_year_starts_at_the_first_entry(): void
     {
-        $this->user->update(['period_starts_on' => null, 'period_ends_on' => null]);
+        $this->user->schoolClasses()->detach();
         $this->entry($this->launcher, '2026-11-03 09:00:00', '2026-11-03 10:00:00');
 
-        $period = ReportPeriod::resolve($this->user->refresh(), 'course');
+        $period = ReportPeriod::resolve($this->user->refresh(), 'year');
 
         $this->assertSame('3 november 2026 tot en met 22 november 2026', $period->label());
     }
@@ -102,7 +107,7 @@ class ReportTest extends TestCase
     {
         $this->seedData();
 
-        $report = new Report($this->user, ReportPeriod::resolve($this->user, 'course'));
+        $report = new Report($this->user, ReportPeriod::resolve($this->user, 'year'));
 
         $this->assertSame(360, $report->totalMinutes());
         $this->assertSame(3, $report->count());
@@ -113,7 +118,7 @@ class ReportTest extends TestCase
     {
         $this->seedData();
 
-        $weeks = (new Report($this->user, ReportPeriod::resolve($this->user, 'course')))->weeks();
+        $weeks = (new Report($this->user, ReportPeriod::resolve($this->user, 'year')))->weeks();
 
         $week46 = collect($weeks)->firstWhere('label', 'wk 46');
         $week47 = collect($weeks)->firstWhere('label', 'wk 47');
@@ -129,7 +134,7 @@ class ReportTest extends TestCase
     {
         $this->seedData();
 
-        $axis = (new Report($this->user, ReportPeriod::resolve($this->user, 'course')))->axis();
+        $axis = (new Report($this->user, ReportPeriod::resolve($this->user, 'year')))->axis();
 
         $this->assertSame(3, $axis['max']);
         $this->assertSame([0, 1, 2, 3], $axis['ticks']);
@@ -139,7 +144,7 @@ class ReportTest extends TestCase
     {
         $this->seedData();
 
-        $report = new Report($this->user, ReportPeriod::resolve($this->user, 'course'));
+        $report = new Report($this->user, ReportPeriod::resolve($this->user, 'year'));
 
         $projects = $report->perProject();
         $categories = $report->perCategory();
@@ -168,14 +173,14 @@ class ReportTest extends TestCase
             'ended_at' => '2026-11-17 12:00:00',
         ]);
 
-        $report = new Report($this->user, ReportPeriod::resolve($this->user, 'course'));
+        $report = new Report($this->user, ReportPeriod::resolve($this->user, 'year'));
 
         $this->assertSame(0, $report->totalMinutes());
     }
 
     public function test_an_empty_report_does_not_break(): void
     {
-        $report = new Report($this->user, ReportPeriod::resolve($this->user, 'course'));
+        $report = new Report($this->user, ReportPeriod::resolve($this->user, 'year'));
 
         $this->assertSame(1, $report->axis()['max']);
         $this->assertSame([], $report->perProject());
@@ -215,14 +220,14 @@ class ReportTest extends TestCase
     {
         Livewire::test('pages::reports.index')
             ->call('choose', 'hack')
-            ->assertSet('filter', 'course');
+            ->assertSet('filter', 'year');
     }
 
     public function test_csv_export_contains_the_entries_in_local_time(): void
     {
         $this->seedData();
 
-        $response = $this->get(route('reports.export.csv', ['periode' => 'course']));
+        $response = $this->get(route('reports.export.csv', ['periode' => 'year']));
 
         $response->assertOk();
 
@@ -258,7 +263,7 @@ class ReportTest extends TestCase
     {
         $this->seedData();
 
-        $response = $this->get(route('reports.export.pdf', ['periode' => 'course']));
+        $response = $this->get(route('reports.export.pdf', ['periode' => 'year']));
 
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');

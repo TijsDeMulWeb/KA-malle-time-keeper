@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\SchoolYear;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -9,7 +10,7 @@ use Carbon\CarbonInterface;
 class ReportPeriod
 {
     /** @var array<int, string> */
-    public static array $filters = ['week', 'last-week', 'month', 'course', 'custom'];
+    public static array $filters = ['week', 'last-week', 'month', 'year', 'custom'];
 
     public function __construct(
         public string $filter,
@@ -17,8 +18,13 @@ class ReportPeriod
         public CarbonImmutable $until,
     ) {}
 
-    public static function resolve(User $user, string $filter = 'course', ?string $from = null, ?string $until = null): self
-    {
+    public static function resolve(
+        User $user,
+        string $filter = 'year',
+        ?string $from = null,
+        ?string $until = null,
+        ?SchoolYear $schoolYear = null,
+    ): self {
         $thisWeek = LocalTime::startOfWeek();
 
         if ($filter === 'week') {
@@ -39,7 +45,13 @@ class ReportPeriod
             return self::custom($thisWeek, $from, $until);
         }
 
-        return self::course($user, $thisWeek);
+        $schoolYear ??= self::defaultSchoolYear($user);
+
+        if (! $schoolYear) {
+            return self::sinceFirstEntry($user, $thisWeek);
+        }
+
+        return self::schoolYear($schoolYear, $thisWeek);
     }
 
     public function fromUtc(): CarbonImmutable
@@ -91,26 +103,34 @@ class ReportPeriod
         return new self('custom', $start, $end);
     }
 
-    private static function course(User $user, CarbonImmutable $thisWeek): self
+    private static function schoolYear(SchoolYear $schoolYear, CarbonImmutable $thisWeek): self
     {
         $endOfThisWeek = $thisWeek->addWeek();
-
-        $start = $user->period_starts_on
-            ? LocalTime::parse($user->period_starts_on->format('Y-m-d'))
-            : self::firstEntryDay($user, $thisWeek);
-
-        $end = $endOfThisWeek;
-
-        if ($user->period_ends_on) {
-            $periodEnd = LocalTime::parse($user->period_ends_on->format('Y-m-d'))->addDay();
-            $end = $periodEnd->lessThan($endOfThisWeek) ? $periodEnd : $endOfThisWeek;
-        }
+        $start = $schoolYear->startsAt();
+        $end = $schoolYear->endsAt()->lessThan($endOfThisWeek) ? $schoolYear->endsAt() : $endOfThisWeek;
 
         if ($end->lessThanOrEqualTo($start)) {
             $end = $start->addWeek();
         }
 
-        return new self('course', $start, $end);
+        return new self('year', $start, $end);
+    }
+
+    private static function defaultSchoolYear(User $user): ?SchoolYear
+    {
+        $schoolYears = SchoolYear::whereHas('schoolClasses.students', fn ($query) => $query->whereKey($user->id))
+            ->orderByDesc('starts_on')
+            ->get();
+
+        $today = LocalTime::now()->format('Y-m-d');
+
+        return $schoolYears->first(fn (SchoolYear $schoolYear) => $schoolYear->starts_on->format('Y-m-d') <= $today)
+            ?? $schoolYears->first();
+    }
+
+    private static function sinceFirstEntry(User $user, CarbonImmutable $thisWeek): self
+    {
+        return new self('year', self::firstEntryDay($user, $thisWeek), $thisWeek->addWeek());
     }
 
     private static function firstEntryDay(User $user, CarbonImmutable $fallback): CarbonImmutable

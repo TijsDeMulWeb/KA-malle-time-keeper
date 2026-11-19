@@ -33,7 +33,7 @@ new #[Title('Projecten')] class extends Component {
 
     public function edit(int $projectId): void
     {
-        $project = auth()->user()->projects()->findOrFail($projectId);
+        $project = Project::availableTo(auth()->user())->findOrFail($projectId);
 
         $this->authorize('update', $project);
 
@@ -56,7 +56,7 @@ new #[Title('Projecten')] class extends Component {
 
     public function toggleArchive(int $projectId): void
     {
-        $project = auth()->user()->projects()->findOrFail($projectId);
+        $project = Project::availableTo(auth()->user())->findOrFail($projectId);
 
         $this->authorize('update', $project);
 
@@ -66,7 +66,8 @@ new #[Title('Projecten')] class extends Component {
     #[Computed]
     public function projects(): Collection
     {
-        $projects = auth()->user()->projects()
+        $projects = Project::availableTo(auth()->user())
+            ->with('schoolClass')
             ->when($this->status === 'archived', fn ($query) => $query->archived(), fn ($query) => $query->active())
             ->when($this->search !== '', function ($query) {
                 $query->where(function ($query) {
@@ -74,6 +75,7 @@ new #[Title('Projecten')] class extends Component {
                         ->orWhere('client', 'like', "%{$this->search}%");
                 });
             })
+            ->orderByRaw('user_id is null')
             ->orderBy('name')
             ->get();
 
@@ -137,6 +139,11 @@ new #[Title('Projecten')] class extends Component {
                             <flux:text size="sm">{{ $project->client ?? __('Geen klant') }}</flux:text>
                         </div>
 
+                        @if($project->isShared())
+                            <flux:badge size="sm" icon="users" class="ms-auto shrink-0" data-test="shared-badge">{{ $project->schoolClass?->name ?? __('Gedeeld') }}</flux:badge>
+                        @endif
+
+                        @can('update', $project)
                         <flux:dropdown align="end">
                             <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" inset />
 
@@ -147,6 +154,7 @@ new #[Title('Projecten')] class extends Component {
                                 </flux:menu.item>
                             </flux:menu>
                         </flux:dropdown>
+                        @endcan
                     </div>
 
                     <div>

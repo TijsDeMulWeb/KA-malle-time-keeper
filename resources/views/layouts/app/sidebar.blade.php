@@ -1,9 +1,14 @@
+@use('App\Models\Category')
+@use('App\Models\SchoolYear')
+@use('App\Models\User')
+@use('App\Support\Impersonation')
+@use('App\Support\StudentView')
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
+    <body class="min-h-screen border-t-4 border-brand-lime bg-white dark:bg-zinc-800">
         <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.header>
                 <x-app-logo :sidebar="true" href="{{ route('entries.index') }}" wire:navigate />
@@ -22,9 +27,55 @@
                 </flux:sidebar.item>
             </flux:sidebar.nav>
 
+            @if(auth()->user()->can('viewAny', User::class) || auth()->user()->can('viewAny', Category::class))
+                <flux:sidebar.nav>
+                    <flux:sidebar.group :heading="__('Beheer')" class="grid">
+                        @can('viewAny', SchoolYear::class)
+                            <flux:sidebar.item icon="academic-cap" :href="route('admin.school-years.index')" :current="request()->routeIs('admin.school-years.*', 'admin.school-classes.*')" wire:navigate data-test="nav-admin-school-years">
+                                {{ __('Schooljaren') }}
+                            </flux:sidebar.item>
+                        @endcan
+                        @can('viewAny', User::class)
+                            <flux:sidebar.item icon="users" :href="route('admin.users.index')" :current="request()->routeIs('admin.users.*')" wire:navigate data-test="nav-admin-users">
+                                {{ __('Gebruikers') }}
+                            </flux:sidebar.item>
+                        @endcan
+                        @can('viewAny', Category::class)
+                            <flux:sidebar.item icon="tag" :href="route('admin.categories.index')" :current="request()->routeIs('admin.categories.*')" wire:navigate data-test="nav-admin-categories">
+                                {{ __('Categorieën') }}
+                            </flux:sidebar.item>
+                        @endcan
+                    </flux:sidebar.group>
+                </flux:sidebar.nav>
+            @endif
+
             <flux:spacer />
 
             <flux:sidebar.nav>
+                @if(Impersonation::isActive())
+                    <form method="POST" action="{{ route('impersonation.destroy') }}">
+                        @csrf
+                        @method('DELETE')
+                        <flux:sidebar.item as="button" type="submit" icon="arrow-uturn-left" class="w-full cursor-pointer !bg-brand-lime !text-black" data-test="sidebar-stop-impersonating">
+                            {{ __('Terug naar je account') }}
+                        </flux:sidebar.item>
+                    </form>
+                @elseif(StudentView::isActive())
+                    <form method="POST" action="{{ route('student-view.destroy') }}">
+                        @csrf
+                        @method('DELETE')
+                        <flux:sidebar.item as="button" type="submit" icon="arrow-uturn-left" class="w-full cursor-pointer !bg-brand-lime !text-black" data-test="stop-student-view">
+                            {{ __('Studentweergave verlaten') }}
+                        </flux:sidebar.item>
+                    </form>
+                @elseif(auth()->user()->can('viewAny', User::class))
+                    <form method="POST" action="{{ route('student-view.store') }}">
+                        @csrf
+                        <flux:sidebar.item as="button" type="submit" icon="eye" class="w-full cursor-pointer" data-test="start-student-view">
+                            {{ __('Bekijk als student') }}
+                        </flux:sidebar.item>
+                    </form>
+                @endif
                 <flux:modal.trigger name="shortcuts">
                     <flux:sidebar.item icon="command-line" data-shortcut="?" data-test="open-shortcuts">
                         {{ __('Sneltoetsen') }}

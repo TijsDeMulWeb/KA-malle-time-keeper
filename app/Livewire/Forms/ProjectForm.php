@@ -3,6 +3,7 @@
 namespace App\Livewire\Forms;
 
 use App\Models\Project;
+use App\Models\SchoolClass;
 use Livewire\Form;
 
 class ProjectForm extends Form
@@ -14,6 +15,8 @@ class ProjectForm extends Form
     public string $client = '';
 
     public string $color = '#14b8a6';
+
+    public ?SchoolClass $schoolClass = null;
 
     public function rules(): array
     {
@@ -39,6 +42,7 @@ class ProjectForm extends Form
         $this->name = $project->name;
         $this->client = (string) $project->client;
         $this->color = $project->color;
+        $this->schoolClass = $project->schoolClass;
     }
 
     public function save(): Project
@@ -55,6 +59,10 @@ class ProjectForm extends Form
             $this->project->update($attributes);
 
             return $this->project;
+        }
+
+        if ($this->schoolClass) {
+            return $this->schoolClass->projects()->create($attributes);
         }
 
         return auth()->user()->projects()->create($attributes);
