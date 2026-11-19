@@ -32,7 +32,6 @@ class ReportTest extends TestCase
         $this->user = User::factory()->create([
             'period_starts_on' => '2026-09-21',
             'period_ends_on' => '2027-01-24',
-            'period_goal_minutes' => 18000,
         ]);
         $this->launcher = Project::factory()->for($this->user)->create(['name' => 'Game Launcher', 'color' => '#14b8a6']);
         $this->fablab = Project::factory()->for($this->user)->create(['name' => 'Fablab Opvolging', 'client' => 'Ivan', 'color' => '#6b7280']);
@@ -192,7 +191,6 @@ class ReportTest extends TestCase
             ->assertSee('6u')
             ->assertSee('3 registraties')
             ->assertSee('Gemiddeld per week')
-            ->assertSee('/ 300u')
             ->assertSee('Per project')
             ->assertSee('Development')
             ->assertSee('Zonder categorie')

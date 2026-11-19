@@ -122,16 +122,6 @@ new #[Title('Mijn uren')] class extends Component {
         return $slot + 2 >= 48 ? '23:59' : $this->slotStart($slot + 2);
     }
 
-    public function goalPercentage(): int
-    {
-        $goal = auth()->user()->weekly_goal_minutes;
-
-        if ($goal === 0) {
-            return 0;
-        }
-
-        return min(100, (int) round($this->weekView->totalMinutes() / $goal * 100));
-    }
 }; ?>
 
 <div class="flex min-h-0 w-full flex-1 flex-col gap-6">
@@ -149,14 +139,9 @@ new #[Title('Mijn uren')] class extends Component {
         </div>
 
         <div class="flex flex-wrap items-center gap-6">
-            <div class="w-64" data-test="week-goal">
-                <div class="flex items-baseline justify-between text-sm">
-                    <span class="font-medium">{{ Duration::format($this->weekView->totalMinutes()) }}</span>
-                    <span class="text-zinc-500">{{ __('van') }} {{ Duration::format(auth()->user()->weekly_goal_minutes) }}</span>
-                </div>
-                <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
-                    <div class="h-full rounded-full bg-teal-500" style="width: {{ $this->goalPercentage() }}%"></div>
-                </div>
+            <div class="text-sm" data-test="week-total">
+                <div class="text-lg font-semibold">{{ Duration::format($this->weekView->totalMinutes()) }}</div>
+                <div class="text-zinc-500">{{ __('deze week') }}</div>
             </div>
 
 

@@ -76,17 +76,6 @@ class EntriesPageTest extends TestCase
             ->assertSee('Week 47');
     }
 
-    public function test_week_goal_progress_is_shown(): void
-    {
-        $this->entry('2026-11-16 09:00:00', '2026-11-16 19:00:00', 'Lange dag');
-        $this->user->update(['weekly_goal_minutes' => 1200]);
-
-        Livewire::test('pages::entries.index')
-            ->assertSee('10u')
-            ->assertSee('van 20u')
-            ->assertSeeHtml('width: 50%');
-    }
-
     public function test_list_view_groups_entries_by_day(): void
     {
         $this->entry('2026-11-16 13:10:00', '2026-11-16 14:35:00', 'SSO launcher gemaakt');

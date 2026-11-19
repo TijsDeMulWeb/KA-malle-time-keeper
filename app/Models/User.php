@@ -19,15 +19,13 @@ use Laravel\Fortify\PasskeyAuthenticatable;
  * @property string $name
  * @property string $email
  * @property string $password
- * @property int $weekly_goal_minutes
  * @property Carbon|null $period_starts_on
  * @property Carbon|null $period_ends_on
- * @property int|null $period_goal_minutes
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'weekly_goal_minutes', 'period_starts_on', 'period_ends_on', 'period_goal_minutes'])]
+#[Fillable(['name', 'email', 'password', 'period_starts_on', 'period_ends_on'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {

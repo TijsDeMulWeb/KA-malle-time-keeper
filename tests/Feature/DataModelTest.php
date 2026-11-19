@@ -24,13 +24,6 @@ class DataModelTest extends TestCase
         $this->assertDatabaseHas('categories', ['name' => 'Standups & Meetings']);
     }
 
-    public function test_user_has_default_weekly_goal_of_twenty_hours(): void
-    {
-        $user = User::factory()->create();
-
-        $this->assertSame(1200, $user->refresh()->weekly_goal_minutes);
-    }
-
     public function test_relationships_are_connected(): void
     {
         $user = User::factory()->create();

@@ -118,22 +118,11 @@ new #[Title('Rapport')] class extends Component {
         <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-test="tile-average">
             <flux:text size="sm">{{ __('Gemiddeld per week') }}</flux:text>
             <div class="mt-1 text-2xl font-semibold">{{ Duration::format($this->report->averageMinutesPerWeek()) }}</div>
-            <flux:text size="sm">{{ __('doel') }} {{ Duration::format(auth()->user()->weekly_goal_minutes) }} {{ __('per week') }}</flux:text>
         </div>
 
         <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-test="tile-course">
             <flux:text size="sm">{{ __('Hele vak') }}</flux:text>
-            <div class="mt-1 text-2xl font-semibold">
-                {{ Duration::format($this->report->courseMinutes()) }}
-                @if (auth()->user()->period_goal_minutes)
-                    <span class="text-sm font-normal text-zinc-500">/ {{ Duration::format(auth()->user()->period_goal_minutes) }}</span>
-                @endif
-            </div>
-            @if (auth()->user()->period_goal_minutes)
-                <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
-                    <div class="h-full rounded-full bg-sky-500" style="width: {{ min(100, round($this->report->courseMinutes() / auth()->user()->period_goal_minutes * 100)) }}%"></div>
-                </div>
-            @endif
+            <div class="mt-1 text-2xl font-semibold">{{ Duration::format($this->report->courseMinutes()) }}</div>
         </div>
 
     </div>

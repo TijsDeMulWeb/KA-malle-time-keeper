@@ -16,10 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->unsignedInteger('weekly_goal_minutes')->default(1200);
             $table->date('period_starts_on')->nullable();
             $table->date('period_ends_on')->nullable();
-            $table->unsignedInteger('period_goal_minutes')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
