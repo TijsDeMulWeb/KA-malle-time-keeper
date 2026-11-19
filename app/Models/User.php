@@ -6,6 +6,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -18,11 +19,15 @@ use Laravel\Fortify\PasskeyAuthenticatable;
  * @property string $name
  * @property string $email
  * @property string $password
+ * @property int $weekly_goal_minutes
+ * @property Carbon|null $period_starts_on
+ * @property Carbon|null $period_ends_on
+ * @property int|null $period_goal_minutes
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'weekly_goal_minutes', 'period_starts_on', 'period_ends_on', 'period_goal_minutes'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements PasskeyUser
 {
@@ -38,7 +43,19 @@ class User extends Authenticatable implements PasskeyUser
     {
         return [
             'password' => 'hashed',
+            'period_starts_on' => 'date',
+            'period_ends_on' => 'date',
         ];
+    }
+
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    public function timeEntries(): HasMany
+    {
+        return $this->hasMany(TimeEntry::class);
     }
 
     /**
