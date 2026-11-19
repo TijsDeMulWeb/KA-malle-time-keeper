@@ -185,4 +185,11 @@ class EntryModalTest extends TestCase
         $this->assertSame('Nog bezig', $entry->description);
         $this->assertNull($entry->ended_at);
     }
+
+    public function test_an_end_of_midnight_is_shown_as_the_last_minute_of_the_day(): void
+    {
+        Livewire::test('entry-modal')
+            ->call('open', date: '2026-11-18', start: '22:00', end: '24:00')
+            ->assertSet('form.end', '23:59');
+    }
 }

@@ -68,3 +68,13 @@ select:focus[data-flux-control] {
 .scroll-initial-target {
     scroll-initial-target: nearest;
 }
+
+.calendar-quarters {
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(var(--quarter-height) - 1px),
+        color-mix(in srgb, currentColor 7%, transparent) calc(var(--quarter-height) - 1px),
+        color-mix(in srgb, currentColor 7%, transparent) var(--quarter-height)
+    );
+}

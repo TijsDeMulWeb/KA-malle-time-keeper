@@ -223,4 +223,12 @@ class EntriesPageTest extends TestCase
             ->assertSeeHtml('data-shortcut="ArrowRight"')
             ->assertSeeHtml('data-test="shortcuts-modal"');
     }
+
+    public function test_half_hour_slots_open_prefilled_entries_and_the_last_slot_stops_before_midnight(): void
+    {
+        Livewire::test('pages::entries.index')
+            ->assertSeeHtml("open-entry', { date: '2026-11-18', start: '09:30', end: '10:30' }")
+            ->assertSeeHtml("open-entry', { date: '2026-11-18', start: '23:00', end: '23:59' }")
+            ->assertSeeHtml("open-entry', { date: '2026-11-18', start: '23:30', end: '23:59' }");
+    }
 }

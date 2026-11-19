@@ -35,6 +35,7 @@ new class extends Component {
 
         $startTime = $start ?? LocalTime::now()->startOfHour()->format('H:i');
         $endTime = $end ?? LocalTime::parse('2000-01-01', $startTime)->addHour()->format('H:i');
+        $endTime = $endTime === '24:00' ? '23:59' : $endTime;
 
         $this->form->prepareNew(
             date: $date ?? LocalTime::now()->format('Y-m-d'),

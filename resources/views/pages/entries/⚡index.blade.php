@@ -112,6 +112,16 @@ new #[Title('Mijn uren')] class extends Component {
             ->all();
     }
 
+    public function slotStart(int $slot): string
+    {
+        return sprintf('%02d:%02d', intdiv($slot, 2), ($slot % 2) * 30);
+    }
+
+    public function slotEnd(int $slot): string
+    {
+        return $slot + 2 >= 48 ? '23:59' : $this->slotStart($slot + 2);
+    }
+
     public function goalPercentage(): int
     {
         $goal = auth()->user()->weekly_goal_minutes;
@@ -242,19 +252,24 @@ new #[Title('Mijn uren')] class extends Component {
                         <div
                             wire:key="day-column-{{ $loop->index }}"
                             @class([
-                                'relative border-s border-zinc-200 dark:border-zinc-700',
+                                'calendar-quarters relative border-s border-zinc-200 dark:border-zinc-700',
                                 'bg-sky-50/50 dark:bg-sky-950/20' => $day['isToday'],
                             ])
                             data-test="day-column"
                             data-calendar-day="{{ $day['date']->format('Y-m-d') }}"
+                            style="--quarter-height: {{ $this->weekView->pixelsPerHour / 4 }}px"
                         >
-                            @foreach (range(0, 23) as $hour)
+                            @foreach (range(0, 47) as $slot)
                                 <button
                                     type="button"
-                                    wire:click="$dispatch('open-entry', { date: '{{ $day['date']->format('Y-m-d') }}', start: '{{ sprintf('%02d:00', $hour) }}', end: '{{ sprintf('%02d:00', $hour + 1) }}' })"
-                                    class="absolute inset-x-0 block cursor-pointer border-t border-zinc-200 hover:bg-zinc-100/60 dark:border-zinc-800 dark:hover:bg-zinc-800/40"
-                                    style="top: {{ $hour * $this->weekView->pixelsPerHour }}px; height: {{ $this->weekView->pixelsPerHour }}px"
-                                    aria-label="{{ sprintf('%02d:00', $hour) }}"
+                                    wire:click="$dispatch('open-entry', { date: '{{ $day['date']->format('Y-m-d') }}', start: '{{ $this->slotStart($slot) }}', end: '{{ $this->slotEnd($slot) }}' })"
+                                    @class([
+                                        'absolute inset-x-0 block cursor-pointer border-t hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40',
+                                        'border-zinc-200 dark:border-zinc-700' => $slot % 2 === 0,
+                                        'border-zinc-200/60 dark:border-zinc-800' => $slot % 2 === 1,
+                                    ])
+                                    style="top: {{ $slot * $this->weekView->pixelsPerHour / 2 }}px; height: {{ $this->weekView->pixelsPerHour / 2 }}px"
+                                    aria-label="{{ $this->slotStart($slot) }}"
                                     data-calendar-slot
                                 ></button>
                             @endforeach
