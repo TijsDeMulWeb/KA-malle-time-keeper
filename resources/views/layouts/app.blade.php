@@ -5,5 +5,7 @@
         {{ $slot }}
 
         <livewire:entry-modal />
+
+        <x-shortcuts-modal />
     </flux:main>
 </x-layouts::app.sidebar>

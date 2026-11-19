@@ -1,8 +1,11 @@
 <?php
 
+use App\Actions\MoveTimeEntry;
 use App\Support\Duration;
 use App\Support\LocalTime;
 use App\Support\WeekView;
+use Flux\Flux;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
@@ -46,6 +49,28 @@ new #[Title('Mijn uren')] class extends Component {
     public function refresh(): void
     {
         unset($this->weekView);
+    }
+
+    #[On('entry-moved')]
+    public function moveEntry(int $entry, string $date, string $start, string $end, MoveTimeEntry $move): void
+    {
+        $timeEntry = auth()->user()->timeEntries()->findOrFail($entry);
+
+        $this->authorize('update', $timeEntry);
+
+        try {
+            $move->handle(auth()->user(), $timeEntry, $date, $start, $end);
+        } catch (ValidationException $exception) {
+            Flux::toast(variant: 'danger', text: $exception->validator->errors()->first());
+
+            $this->dispatch('entry-move-rejected');
+
+            return;
+        }
+
+        unset($this->weekView);
+
+        $this->dispatch('entries-changed');
     }
 
     #[Computed]
@@ -105,10 +130,10 @@ new #[Title('Mijn uren')] class extends Component {
             <flux:text size="sm" class="uppercase tracking-wide">{{ __('Week') }} {{ $this->weekStart->isoWeek }}</flux:text>
             <div class="flex items-center gap-3">
                 <flux:heading size="xl" level="1">{{ $this->weekLabel() }}</flux:heading>
-                <flux:button variant="ghost" size="sm" icon="chevron-left" wire:click="previousWeek" :aria-label="__('Vorige week')" data-test="previous-week" />
-                <flux:button variant="ghost" size="sm" icon="chevron-right" wire:click="nextWeek" :aria-label="__('Volgende week')" data-test="next-week" />
+                <flux:button variant="ghost" size="sm" icon="chevron-left" wire:click="previousWeek" data-shortcut="ArrowLeft" :aria-label="__('Vorige week')" data-test="previous-week" />
+                <flux:button variant="ghost" size="sm" icon="chevron-right" wire:click="nextWeek" data-shortcut="ArrowRight" :aria-label="__('Volgende week')" data-test="next-week" />
                 @if ($week !== '')
-                    <flux:button variant="subtle" size="sm" wire:click="currentWeek">{{ __('Vandaag') }}</flux:button>
+                    <flux:button variant="subtle" size="sm" wire:click="currentWeek" data-shortcut="t">{{ __('Vandaag') }}</flux:button>
                 @endif
             </div>
         </div>
@@ -179,7 +204,7 @@ new #[Title('Mijn uren')] class extends Component {
             @endforelse
         </div>
     @else
-        <div wire:poll.60s class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700" data-test="calendar">
+        <div wire:poll.60s class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700" data-test="calendar" data-calendar data-pixels-per-hour="{{ $this->weekView->pixelsPerHour }}">
             <div class="grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))] border-b border-zinc-200 dark:border-zinc-700">
                 <div></div>
                 @foreach ($this->weekView->days() as $day)
@@ -225,6 +250,7 @@ new #[Title('Mijn uren')] class extends Component {
                                 'bg-sky-50/50 dark:bg-sky-950/20' => $day['isToday'],
                             ])
                             data-test="day-column"
+                            data-calendar-day="{{ $day['date']->format('Y-m-d') }}"
                         >
                             @foreach (range(0, 23) as $hour)
                                 <button
@@ -233,6 +259,7 @@ new #[Title('Mijn uren')] class extends Component {
                                     class="absolute inset-x-0 block cursor-pointer border-t border-zinc-200 hover:bg-zinc-100/60 dark:border-zinc-800 dark:hover:bg-zinc-800/40"
                                     style="top: {{ $hour * $this->weekView->pixelsPerHour }}px; height: {{ $this->weekView->pixelsPerHour }}px"
                                     aria-label="{{ sprintf('%02d:00', $hour) }}"
+                                    data-calendar-slot
                                 ></button>
                             @endforeach
 
@@ -241,9 +268,13 @@ new #[Title('Mijn uren')] class extends Component {
                                     type="button"
                                     wire:key="block-{{ $block['entry']->id }}-{{ $loop->parent->index }}"
                                     wire:click="$dispatch('open-entry', { entry: {{ $block['entry']->id }} })"
-                                    class="absolute inset-x-0.5 z-10 overflow-hidden rounded-md px-2 py-1 text-start text-xs leading-tight"
+                                    class="absolute inset-x-0.5 z-10 select-none overflow-hidden rounded-md px-2 py-1 text-start text-xs leading-tight {{ $block['draggable'] ? 'touch-none' : '' }}"
                                     style="top: {{ $block['top'] }}px; height: {{ $block['height'] }}px; background-color: color-mix(in srgb, {{ $block['entry']->project->color }} 25%, transparent); border-inline-start: 3px solid {{ $block['entry']->project->color }}"
                                     data-test="entry-block"
+                                    data-entry-id="{{ $block['entry']->id }}"
+                                    data-draggable="{{ $block['draggable'] ? 'true' : 'false' }}"
+                                    data-start-minutes="{{ $block['startMinutes'] }}"
+                                    data-end-minutes="{{ $block['endMinutes'] }}"
                                 >
                                     <span class="block truncate font-semibold">{{ $block['entry']->description !== '' ? $block['entry']->description : __('Zonder omschrijving') }}</span>
                                     <span class="block truncate opacity-75">{{ $block['entry']->project->name }}</span>
@@ -266,6 +297,6 @@ new #[Title('Mijn uren')] class extends Component {
             </div>
         </div>
 
-        <flux:text size="sm">{{ __('Klik op een leeg uur om een registratie toe te voegen. Klik op een blok om te bewerken.') }}</flux:text>
+        <flux:text size="sm">{{ __('Sleep in een leeg gebied om een blok te tekenen. Sleep een blok om het te verplaatsen, trek aan de onder- of bovenrand om de duur aan te passen. Klik om te bewerken.') }}</flux:text>
     @endif
 </div>

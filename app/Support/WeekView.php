@@ -124,6 +124,11 @@ class WeekView
                     'endLabel' => $entry->ended_at ? LocalTime::local($end)->format('H:i') : null,
                     'continuesFromPrevious' => $entry->started_at->lessThan($dayStart),
                     'continuesToNext' => $entry->ended_at !== null && $entry->ended_at->greaterThan($dayEnd),
+                    'startMinutes' => $startMinutes,
+                    'endMinutes' => $endMinutes,
+                    'draggable' => $entry->ended_at !== null
+                        && $entry->started_at->greaterThanOrEqualTo($dayStart)
+                        && $entry->ended_at->lessThanOrEqualTo($dayEnd),
                 ];
             })
             ->values();

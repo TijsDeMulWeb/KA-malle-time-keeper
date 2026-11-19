@@ -43,7 +43,7 @@ class TimerBarTest extends TestCase
         $this->assertTrue($entry->is_live);
         $this->assertNull($entry->ended_at);
         $this->assertSame('Testing SSO', $entry->description);
-        $this->assertSame('2026-11-19 20:00:00', $entry->started_at->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-11-19 20:00:30', $entry->started_at->format('Y-m-d H:i:s'));
     }
 
     public function test_timer_requires_a_project(): void
@@ -137,7 +137,7 @@ class TimerBarTest extends TestCase
 
         Livewire::test('timer-bar')
             ->assertSee('Bezig met iets')
-            ->assertSee('0:10')
+            ->assertSee('0:10:00')
             ->assertSee('Stop');
     }
 
@@ -162,5 +162,22 @@ class TimerBarTest extends TestCase
         ]);
 
         Livewire::test('timer-bar')->assertSet('projectId', (string) $other->id);
+    }
+
+    public function test_timer_can_start_while_an_entry_is_planned_in_the_future(): void
+    {
+        TimeEntry::factory()->create([
+            'user_id' => $this->user->id,
+            'project_id' => $this->project->id,
+            'started_at' => '2026-11-20 10:00:00',
+            'ended_at' => '2026-11-20 12:00:00',
+        ]);
+
+        Livewire::test('timer-bar')
+            ->set('projectId', (string) $this->project->id)
+            ->call('start')
+            ->assertHasNoErrors();
+
+        $this->assertSame(2, TimeEntry::count());
     }
 }

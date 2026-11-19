@@ -40,12 +40,12 @@ new class extends Component {
             return;
         }
 
-        $startedAt = now()->startOfMinute();
+        $startedAt = now();
 
-        $overlaps = auth()->user()->timeEntries()->overlapping($startedAt, null)->exists();
+        $overlaps = auth()->user()->timeEntries()->overlapping($startedAt, $startedAt->copy()->addMinute())->exists();
 
         if ($overlaps) {
-            $this->addError('description', 'Er is al een registratie die nu loopt of nog in de toekomst eindigt.');
+            $this->addError('description', 'Er is al een registratie die op dit moment loopt.');
 
             return;
         }
@@ -106,7 +106,9 @@ new class extends Component {
 
     public function elapsed(): string
     {
-        return Duration::clock($this->running?->durationInMinutes() ?? 0);
+        $seconds = $this->running ? max(0, (int) $this->running->started_at->diffInSeconds(now())) : 0;
+
+        return Duration::clockWithSeconds($seconds);
     }
 
     private function defaultProjectId(): ?int
@@ -130,9 +132,9 @@ new class extends Component {
             </div>
         </div>
 
-        <span class="font-mono text-2xl tabular-nums" data-test="timer-elapsed">{{ $this->elapsed() }}</span>
+        <span class="font-mono text-2xl tabular-nums" data-test="timer-elapsed" data-timer-started-at="{{ $this->running->started_at->toIso8601String() }}">{{ $this->elapsed() }}</span>
 
-        <flux:button variant="danger" icon="stop" wire:click="stop" data-test="stop-timer">{{ __('Stop') }}</flux:button>
+        <flux:button variant="danger" icon="stop" wire:click="stop" data-shortcut="s" data-test="stop-timer">{{ __('Stop') }}</flux:button>
     @else
         <div class="min-w-48 flex-1">
             <flux:input wire:model="description" wire:keydown.enter="start" :placeholder="__('Waar werk je aan?')" />
@@ -153,8 +155,8 @@ new class extends Component {
 
         <span class="font-mono text-2xl tabular-nums text-zinc-400">0:00</span>
 
-        <flux:button variant="primary" icon="play" wire:click="start" data-test="start-timer">{{ __('Start') }}</flux:button>
+        <flux:button variant="primary" icon="play" wire:click="start" data-shortcut="s" data-test="start-timer">{{ __('Start') }}</flux:button>
     @endif
 
-    <flux:button variant="ghost" icon="plus" wire:click="$dispatch('open-entry')" :aria-label="__('Registratie toevoegen')" data-test="add-entry" />
+    <flux:button variant="ghost" icon="plus" wire:click="$dispatch('open-entry')" data-shortcut="n" :aria-label="__('Registratie toevoegen')" data-test="add-entry" />
 </div>

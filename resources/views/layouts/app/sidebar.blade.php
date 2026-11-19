@@ -24,6 +24,14 @@
 
             <flux:spacer />
 
+            <flux:sidebar.nav>
+                <flux:modal.trigger name="shortcuts">
+                    <flux:sidebar.item icon="command-line" data-shortcut="?" data-test="open-shortcuts">
+                        {{ __('Sneltoetsen') }}
+                    </flux:sidebar.item>
+                </flux:modal.trigger>
+            </flux:sidebar.nav>
+
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
         </flux:sidebar>
 

@@ -31,4 +31,13 @@ class Duration
 
         return "{$hours}:{$remainder}";
     }
+
+    public static function clockWithSeconds(int $seconds): string
+    {
+        $hours = intdiv($seconds, 3600);
+        $minutes = str_pad((string) intdiv($seconds % 3600, 60), 2, '0', STR_PAD_LEFT);
+        $remainder = str_pad((string) ($seconds % 60), 2, '0', STR_PAD_LEFT);
+
+        return "{$hours}:{$minutes}:{$remainder}";
+    }
 }
