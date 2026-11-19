@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\LocalTime;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -61,9 +63,20 @@ class TimeEntry extends Model
         $query->whereNotNull('ended_at');
     }
 
-    public function scopeStartingBetween(Builder $query, Carbon $from, Carbon $until): void
+    public function scopeStartingBetween(Builder $query, CarbonInterface $from, CarbonInterface $until): void
     {
         $query->where('started_at', '>=', $from)->where('started_at', '<', $until);
+    }
+
+    public function scopeOverlapping(Builder $query, CarbonInterface $start, ?CarbonInterface $end): void
+    {
+        if ($end) {
+            $query->where('started_at', '<', $end);
+        }
+
+        $query->where(function (Builder $query) use ($start) {
+            $query->whereNull('ended_at')->orWhere('ended_at', '>', $start);
+        });
     }
 
     public function isRunning(): bool
@@ -78,13 +91,26 @@ class TimeEntry extends Model
         return (int) $this->started_at->diffInMinutes($end, absolute: true);
     }
 
+    public function minutesWithin(CarbonInterface $from, CarbonInterface $until): int
+    {
+        $start = $this->started_at->greaterThan($from) ? $this->started_at : $from;
+        $end = $this->ended_at ?? now();
+        $end = $end->lessThan($until) ? $end : $until;
+
+        if ($end->lessThanOrEqualTo($start)) {
+            return 0;
+        }
+
+        return (int) $start->diffInMinutes($end);
+    }
+
     public function localStartedAt(): CarbonImmutable
     {
-        return $this->started_at->toImmutable()->setTimezone(config('time-keeper.timezone'));
+        return LocalTime::local($this->started_at);
     }
 
     public function localEndedAt(): ?CarbonImmutable
     {
-        return $this->ended_at?->toImmutable()->setTimezone(config('time-keeper.timezone'));
+        return $this->ended_at ? LocalTime::local($this->ended_at) : null;
     }
 }

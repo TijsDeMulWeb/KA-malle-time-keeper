@@ -9,6 +9,8 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    Route::livewire('settings/uren', 'pages::settings.time')->name('time-settings.edit');
+
     Route::livewire('settings/appearance', 'pages::settings.appearance')->name('appearance.edit');
 
     Route::livewire('settings/security', 'pages::settings.security')
