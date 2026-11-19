@@ -10,9 +10,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         User::factory()->create([
-            'name' => 'Tijs De Mul',
-            'email' => 'tijs.de.mul@gmail.com',
-            'password' => 'password',
+            'name' => config('time-keeper.user.name'),
+            'email' => config('time-keeper.user.email'),
+            'password' => config('time-keeper.user.password'),
         ]);
     }
 }
