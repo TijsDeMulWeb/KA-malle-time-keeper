@@ -1,8 +1,10 @@
 <x-layouts::app.sidebar :title="$title ?? null">
-    <flux:main>
+    <flux:main class="flex flex-col lg:h-dvh">
         <livewire:timer-bar />
 
-        {{ $slot }}
+        <div class="flex min-h-0 flex-1 flex-col lg:overflow-y-auto">
+            {{ $slot }}
+        </div>
 
         <livewire:entry-modal />
 

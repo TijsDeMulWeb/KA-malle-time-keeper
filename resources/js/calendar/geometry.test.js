@@ -3,10 +3,11 @@ import test from 'node:test';
 import { createRange, edgeAt, moveRange, pixelsToMinutes, resizeRange, snap } from './geometry.js';
 import { formatClock, formatTime } from '../utils/format.js';
 
-test('snaps to five minutes', () => {
-    assert.equal(snap(7), 5);
-    assert.equal(snap(8), 10);
+test('snaps to fifteen minutes', () => {
+    assert.equal(snap(7), 0);
+    assert.equal(snap(8), 15);
     assert.equal(snap(62), 60);
+    assert.equal(snap(68), 75);
 });
 
 test('converts pixels to minutes', () => {
@@ -32,8 +33,8 @@ test('resizing the start changes only the start', () => {
 });
 
 test('resizing keeps a minimum duration', () => {
-    assert.deepEqual(resizeRange('end', 600, 660, -500), { start: 600, end: 605 });
-    assert.deepEqual(resizeRange('start', 600, 660, 500), { start: 655, end: 660 });
+    assert.deepEqual(resizeRange('end', 600, 660, -500), { start: 600, end: 615 });
+    assert.deepEqual(resizeRange('start', 600, 660, 500), { start: 645, end: 660 });
 });
 
 test('resizing cannot pass midnight', () => {

@@ -1,4 +1,4 @@
-export const snapStep = 5;
+export const snapStep = 15;
 export const minutesPerDay = 1440;
 
 export function snap(minutes, step = snapStep) {

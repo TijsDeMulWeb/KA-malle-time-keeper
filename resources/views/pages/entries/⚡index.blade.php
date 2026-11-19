@@ -134,7 +134,7 @@ new #[Title('Mijn uren')] class extends Component {
     }
 }; ?>
 
-<div class="mx-auto w-full max-w-7xl space-y-6">
+<div class="flex min-h-0 w-full flex-1 flex-col gap-6">
     <div class="flex flex-wrap items-end justify-between gap-6">
         <div>
             <flux:text size="sm" class="uppercase tracking-wide">{{ __('Week') }} {{ $this->weekStart->isoWeek }}</flux:text>
@@ -210,7 +210,7 @@ new #[Title('Mijn uren')] class extends Component {
             @endforelse
         </div>
     @else
-        <div wire:poll.60s class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700" data-test="calendar" data-calendar data-pixels-per-hour="{{ $this->weekView->pixelsPerHour }}">
+        <div wire:poll.60s class="flex min-h-96 flex-1 flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700" data-test="calendar" data-calendar data-pixels-per-hour="{{ $this->weekView->pixelsPerHour }}">
             <div class="grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))] border-b border-zinc-200 dark:border-zinc-700">
                 <div></div>
                 @foreach ($this->weekView->days() as $day)
@@ -230,7 +230,7 @@ new #[Title('Mijn uren')] class extends Component {
                 @endforeach
             </div>
 
-            <div class="overflow-y-auto" style="height: 576px">
+            <div class="min-h-0 flex-1 overflow-y-auto">
                 <div
                     class="relative grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))]"
                     style="height: {{ $this->weekView->gridHeight() }}px"
