@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Support\Duration;
 use Flux\Flux;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
@@ -69,7 +70,7 @@ new #[Title('Klas')] class extends Component {
             return;
         }
 
-        $failed = app(InviteStudents::class)->execute($students, $this->schoolClass);
+        $failed = app(InviteStudents::class)->execute($students, $this->schoolClass, Auth::user());
 
         $this->showInviteForm = false;
         $this->bulkForm->reset();
@@ -124,7 +125,7 @@ new #[Title('Klas')] class extends Component {
             return;
         }
 
-        $sent = $sendInvitation->execute($student);
+        $sent = $sendInvitation->execute($student, Auth::user());
 
         Flux::toast(
             variant: $sent ? 'success' : 'danger',

@@ -9,10 +9,10 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class SendInvitation
 {
-    public function execute(User $user): bool
+    public function execute(User $user, User $inviter): bool
     {
         try {
-            Mail::to($user)->send(new InvitationMail($user));
+            Mail::to($user)->send(new InvitationMail($user, $inviter));
         } catch (TransportExceptionInterface $exception) {
             report($exception);
 

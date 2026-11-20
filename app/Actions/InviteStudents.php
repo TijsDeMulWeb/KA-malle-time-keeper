@@ -20,11 +20,11 @@ class InviteStudents
      * @param  Collection<int, array{name: string, email: string}>  $students
      * @return Collection<int, string>
      */
-    public function execute(Collection $students, ?SchoolClass $schoolClass): Collection
+    public function execute(Collection $students, ?SchoolClass $schoolClass, User $inviter): Collection
     {
         $failedEmails = collect();
 
-        $students->each(function (array $student) use ($schoolClass, $failedEmails) {
+        $students->each(function (array $student) use ($schoolClass, $inviter, $failedEmails) {
             $user = User::create($student);
             $user->assignRole(Role::Student->value);
 
@@ -32,7 +32,7 @@ class InviteStudents
                 $this->assignStudentToClass->execute($user, $schoolClass);
             }
 
-            if (! $this->sendInvitation->execute($user)) {
+            if (! $this->sendInvitation->execute($user, $inviter)) {
                 $failedEmails->push($user->email);
             }
         });

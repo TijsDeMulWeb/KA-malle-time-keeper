@@ -12,6 +12,7 @@ class InvitationMail extends Mailable
 {
     public function __construct(
         public User $user,
+        public User $inviter,
     ) {}
 
     public function envelope(): Envelope

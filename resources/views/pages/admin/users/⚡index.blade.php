@@ -12,6 +12,7 @@ use App\Support\Duration;
 use App\Support\LocalTime;
 use Flux\Flux;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -97,7 +98,7 @@ new #[Title('Gebruikers')] class extends Component {
             return;
         }
 
-        $failed = app(InviteStudents::class)->execute($students, $this->bulkForm->schoolClass());
+        $failed = app(InviteStudents::class)->execute($students, $this->bulkForm->schoolClass(), Auth::user());
 
         $this->showBulkForm = false;
         $this->bulkForm->reset();
@@ -199,7 +200,7 @@ new #[Title('Gebruikers')] class extends Component {
 
     private function invite(User $user): void
     {
-        if (! app(SendInvitation::class)->execute($user)) {
+        if (! app(SendInvitation::class)->execute($user, Auth::user())) {
             Flux::toast(variant: 'danger', text: __('De uitnodiging kon niet verstuurd worden. Probeer het later opnieuw.'));
 
             return;

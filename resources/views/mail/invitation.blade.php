@@ -12,5 +12,5 @@ Account activeren
 Deze link is {{ $expiresInDays }} dagen geldig. Is hij verlopen? Vraag dan een nieuwe uitnodiging aan je leerkracht.
 
 Groeten,<br>
-{{ config('app.name') }}
+{{ $inviter->name }}
 </x-mail::message>

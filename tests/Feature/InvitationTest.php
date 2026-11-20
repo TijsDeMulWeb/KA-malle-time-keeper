@@ -89,10 +89,11 @@ class InvitationTest extends TestCase
     {
         $user = User::factory()->invited()->create(['name' => 'Jan Peeters']);
 
-        $mail = new InvitationMail($user);
+        $mail = new InvitationMail($user, User::factory()->admin()->create(['name' => 'Els Peeters']));
 
         $mail->assertSeeInHtml('Hallo Jan Peeters');
         $mail->assertSeeInHtml('signature=');
+        $mail->assertSeeInHtml('Els Peeters');
         $mail->assertHasSubject('Je bent uitgenodigd voor '.config('app.name'));
     }
 }
