@@ -217,14 +217,9 @@ new #[Title('Gebruikers')] class extends Component {
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
-            <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Zoeken')" class="w-44" />
+            <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" autocomplete="off" :placeholder="__('Zoeken')" class="w-44" />
 
-            <flux:select wire:model.live="role" class="w-36">
-                <flux:select.option value="">{{ __('Alle rollen') }}</flux:select.option>
-                @foreach($this->roles() as $roleOption)
-                    <flux:select.option :value="$roleOption->value">{{ $roleOption->label() }}</flux:select.option>
-                @endforeach
-            </flux:select>
+            <x-listbox wire:model.live="role" class="w-36" :options="['' => __('Alle rollen')] + collect($this->roles())->mapWithKeys(fn ($roleOption) => [$roleOption->value => $roleOption->label()])->all()" />
 
             <flux:button icon="users" wire:click="createMany" data-test="bulk-invite">
                 {{ __('Meerdere uitnodigen') }}
@@ -319,12 +314,7 @@ new #[Title('Gebruikers')] class extends Component {
             <flux:input wire:model="form.name" :label="__('Naam')" autofocus />
             <flux:input wire:model="form.email" type="email" :label="__('E-mailadres')" />
 
-            <flux:select wire:model="form.schoolClassId" :label="__('Klas')">
-                <flux:select.option value="">{{ __('Geen klas') }}</flux:select.option>
-                @foreach($this->schoolClassOptions as $schoolClass)
-                    <flux:select.option :value="$schoolClass->id">{{ $schoolClass->fullName() }}</flux:select.option>
-                @endforeach
-            </flux:select>
+            <x-listbox wire:model="form.schoolClassId" :label="__('Klas')" :options="['' => __('Geen klas')] + $this->schoolClassOptions->mapWithKeys(fn ($schoolClass) => [$schoolClass->id => $schoolClass->fullName()])->all()" />
 
             @if(! $form->user?->is(auth()->user()))
                 <flux:radio.group wire:model="form.role" :label="__('Rol')" variant="segmented">
@@ -355,12 +345,7 @@ new #[Title('Gebruikers')] class extends Component {
                 @endif
             </div>
 
-            <flux:select wire:model="bulkForm.schoolClassId" :label="__('Klas')">
-                <flux:select.option value="">{{ __('Geen klas') }}</flux:select.option>
-                @foreach($this->schoolClassOptions as $schoolClass)
-                    <flux:select.option :value="$schoolClass->id">{{ $schoolClass->fullName() }}</flux:select.option>
-                @endforeach
-            </flux:select>
+            <x-listbox wire:model="bulkForm.schoolClassId" :label="__('Klas')" :options="['' => __('Geen klas')] + $this->schoolClassOptions->mapWithKeys(fn ($schoolClass) => [$schoolClass->id => $schoolClass->fullName()])->all()" />
 
             <flux:textarea wire:model="bulkForm.lines" rows="10" :placeholder="'Voornaam Naam, voornaam.naam@school.be'.PHP_EOL.'andere.student@school.be'" />
 

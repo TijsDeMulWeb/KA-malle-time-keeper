@@ -155,7 +155,7 @@ new #[Title('Schooljaar')] class extends Component {
         </div>
 
         @if($schoolYear->isClosed())
-            <flux:button icon="lock-open" wire:click="reopen" wire:confirm="{{ __('Dit schooljaar heropenen? Uren kunnen dan weer gewijzigd worden.') }}" data-test="reopen-school-year">{{ __('Heropenen') }}</flux:button>
+            <flux:button icon="lock-open" x-on:click="$dispatch('confirm-action', { message: @js(__('Dit schooljaar heropenen? Uren kunnen dan weer gewijzigd worden.')), confirmLabel: @js(__('Heropenen')), confirm: () => $wire.reopen() })" data-test="reopen-school-year">{{ __('Heropenen') }}</flux:button>
         @else
             <flux:button icon="lock-closed" wire:click="$set('showCloseModal', true)" data-test="close-school-year">{{ __('Schooljaar afsluiten') }}</flux:button>
         @endif
@@ -193,7 +193,7 @@ new #[Title('Schooljaar')] class extends Component {
                     @unless($schoolYear->isClosed())
                         <flux:button size="sm" variant="ghost" icon="pencil-square" wire:click="edit({{ $schoolClass->id }})" :aria-label="__('Hernoemen')" />
                         @if($schoolClass->students_count === 0 && $schoolClass->projects_count === 0)
-                            <flux:button size="sm" variant="ghost" icon="trash" wire:click="delete({{ $schoolClass->id }})" wire:confirm="{{ __('Deze klas verwijderen?') }}" :aria-label="__('Verwijderen')" />
+                            <flux:button size="sm" variant="ghost" icon="trash" x-on:click="$dispatch('confirm-action', { message: @js(__('Deze klas verwijderen?')), confirm: () => $wire.delete({{ $schoolClass->id }}) })" :aria-label="__('Verwijderen')" />
                         @endif
                     @endunless
 

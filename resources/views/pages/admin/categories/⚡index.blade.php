@@ -114,8 +114,7 @@ new #[Title('Categorieën')] class extends Component {
                         size="sm"
                         variant="ghost"
                         icon="trash"
-                        wire:click="delete({{ $category->id }})"
-                        wire:confirm="{{ __('Deze categorie verwijderen? Bestaande registraties blijven bestaan, zonder categorie.') }}"
+                        x-on:click="$dispatch('confirm-action', { message: @js(__('Deze categorie verwijderen? Bestaande registraties blijven bestaan, zonder categorie.')), confirm: () => $wire.delete({{ $category->id }}) })"
                         :aria-label="__('Verwijderen')"
                     />
                 @endif

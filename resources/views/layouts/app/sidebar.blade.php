@@ -143,6 +143,8 @@
 
         {{ $slot }}
 
+        <x-confirm-modal />
+
         @persist('toast')
             <flux:toast.group>
                 <flux:toast />

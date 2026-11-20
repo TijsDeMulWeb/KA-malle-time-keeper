@@ -113,7 +113,7 @@ new #[Title('Schooljaren')] class extends Component {
                             <flux:menu>
                                 <flux:menu.item icon="pencil-square" wire:click="edit({{ $schoolYear->id }})">{{ __('Bewerken') }}</flux:menu.item>
                                 @if($schoolYear->school_classes_count === 0)
-                                    <flux:menu.item icon="trash" variant="danger" wire:click="delete({{ $schoolYear->id }})" wire:confirm="{{ __('Dit schooljaar verwijderen?') }}">{{ __('Verwijderen') }}</flux:menu.item>
+                                    <flux:menu.item icon="trash" variant="danger" x-on:click="$dispatch('confirm-action', { message: @js(__('Dit schooljaar verwijderen?')), confirm: () => $wire.delete({{ $schoolYear->id }}) })">{{ __('Verwijderen') }}</flux:menu.item>
                                 @endif
                             </flux:menu>
                         </flux:dropdown>

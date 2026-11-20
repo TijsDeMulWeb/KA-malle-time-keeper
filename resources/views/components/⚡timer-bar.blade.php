@@ -151,18 +151,9 @@ new class extends Component {
             <flux:input wire:model="description" wire:keydown.enter="start" :placeholder="__('Waar werk je aan?')" />
         </div>
 
-        <flux:select wire:model="projectId" class="sm:w-48!" :placeholder="__('Project')">
-            @foreach ($this->projects as $project)
-                <flux:select.option :value="$project->id">{{ $project->name }}</flux:select.option>
-            @endforeach
-        </flux:select>
+        <x-listbox wire:model="projectId" class="sm:w-48!" :placeholder="__('Project')" :options="$this->projects->pluck('name', 'id')->all()" />
 
-        <flux:select wire:model="categoryId" class="sm:w-44!" :placeholder="__('Categorie')">
-            <flux:select.option value="">{{ __('Geen categorie') }}</flux:select.option>
-            @foreach ($this->categories as $category)
-                <flux:select.option :value="$category->id">{{ $category->name }}</flux:select.option>
-            @endforeach
-        </flux:select>
+        <x-listbox wire:model="categoryId" class="sm:w-44!" :placeholder="__('Categorie')" :options="['' => __('Geen categorie')] + $this->categories->pluck('name', 'id')->all()" />
 
         <div class="col-span-2 flex items-center gap-3 sm:contents">
             <span class="me-auto font-mono text-2xl tabular-nums text-zinc-400 sm:me-0">0:00</span>

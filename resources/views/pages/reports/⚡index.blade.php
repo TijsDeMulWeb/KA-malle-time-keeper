@@ -150,12 +150,7 @@ new #[Title('Rapport')] class extends Component {
             </flux:button.group></div>
 
             @if($filter === 'year' && $this->schoolYears->count() > 1)
-                <flux:select wire:model.live="schoolYearId" size="sm" class="w-40" data-test="school-year-filter">
-                    <flux:select.option value="">{{ __('Huidig schooljaar') }}</flux:select.option>
-                    @foreach($this->schoolYears as $schoolYear)
-                        <flux:select.option :value="$schoolYear->id">{{ $schoolYear->name }}</flux:select.option>
-                    @endforeach
-                </flux:select>
+                <x-listbox wire:model.live="schoolYearId" size="sm" class="w-40" data-test="school-year-filter" :options="['' => __('Huidig schooljaar')] + $this->schoolYears->pluck('name', 'id')->all()" />
             @endif
 
             @if($this->isViewingSomeoneElse())

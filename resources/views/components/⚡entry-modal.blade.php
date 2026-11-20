@@ -144,18 +144,9 @@ new class extends Component {
             @endif
 
             <div class="grid grid-cols-2 gap-4">
-                <flux:select wire:model="form.projectId" :label="__('Project')" :placeholder="__('Kies een project')">
-                    @foreach ($this->projects as $project)
-                        <flux:select.option :value="$project->id">{{ $project->name }}</flux:select.option>
-                    @endforeach
-                </flux:select>
+                <x-listbox wire:model="form.projectId" :label="__('Project')" :placeholder="__('Kies een project')" :options="$this->projects->pluck('name', 'id')->all()" />
 
-                <flux:select wire:model="form.categoryId" :label="__('Categorie')" :placeholder="__('Geen categorie')">
-                    <flux:select.option value="">{{ __('Geen categorie') }}</flux:select.option>
-                    @foreach ($this->categories as $category)
-                        <flux:select.option :value="$category->id">{{ $category->name }}</flux:select.option>
-                    @endforeach
-                </flux:select>
+                <x-listbox wire:model="form.categoryId" :label="__('Categorie')" :placeholder="__('Geen categorie')" :options="['' => __('Geen categorie')] + $this->categories->pluck('name', 'id')->all()" />
             </div>
 
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -180,8 +171,7 @@ new class extends Component {
                         variant="ghost"
                         icon="trash"
                         class="text-red-500!"
-                        wire:click="delete"
-                        wire:confirm="{{ __('Deze registratie verwijderen?') }}"
+                        x-on:click="$dispatch('confirm-action', { message: @js(__('Deze registratie verwijderen?')), confirm: () => $wire.delete() })"
                         data-test="delete-entry"
                     />
                 @endif

@@ -371,7 +371,7 @@ new #[Title('Klas')] class extends Component {
                                         @endunless
                                         @if($this->isEditable())
                                             <flux:menu.separator />
-                                            <flux:menu.item icon="user-minus" variant="danger" wire:click="removeStudent({{ $student->id }})" wire:confirm="{{ __('Uit deze klas verwijderen? Het account en de uren blijven bestaan.') }}">{{ __('Uit klas verwijderen') }}</flux:menu.item>
+                                            <flux:menu.item icon="user-minus" variant="danger" x-on:click="$dispatch('confirm-action', { message: @js(__('Uit deze klas verwijderen? Het account en de uren blijven bestaan.')), confirm: () => $wire.removeStudent({{ $student->id }}) })">{{ __('Uit klas verwijderen') }}</flux:menu.item>
                                         @endif
                                     </flux:menu>
                                 </flux:dropdown>
@@ -477,7 +477,7 @@ new #[Title('Klas')] class extends Component {
                 <flux:text class="mt-2">{{ __('Zit een student dit schooljaar al in een andere klas, dan verhuist die naar deze klas.') }}</flux:text>
             </div>
 
-            <flux:input wire:model.live.debounce.300ms="studentSearch" icon="magnifying-glass" :placeholder="__('Zoeken')" />
+            <flux:input wire:model.live.debounce.300ms="studentSearch" icon="magnifying-glass" autocomplete="off" :placeholder="__('Zoeken')" />
 
             <div class="max-h-72 space-y-2 overflow-y-auto">
                 @forelse($this->availableStudents as $student)
@@ -514,11 +514,7 @@ new #[Title('Klas')] class extends Component {
                     <flux:callout.text>{{ __('Maak eerst een klas aan in een ander open schooljaar.') }}</flux:callout.text>
                 </flux:callout>
             @else
-                <flux:select wire:model="targetClassId" :label="__('Naar klas')">
-                    @foreach($this->transferTargets as $target)
-                        <flux:select.option :value="$target->id">{{ $target->fullName() }}</flux:select.option>
-                    @endforeach
-                </flux:select>
+                <x-listbox wire:model="targetClassId" :label="__('Naar klas')" :options="$this->transferTargets->mapWithKeys(fn ($target) => [$target->id => $target->fullName()])->all()" />
             @endif
 
             <div class="flex justify-end gap-3">

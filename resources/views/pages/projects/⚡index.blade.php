@@ -104,7 +104,7 @@ new #[Title('Projecten')] class extends Component {
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
-            <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Zoeken')" class="w-44" />
+            <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" autocomplete="off" :placeholder="__('Zoeken')" class="w-44" />
 
             <flux:radio.group wire:model.live="status" variant="segmented">
                 <flux:radio value="active" :label="__('Actief')" />
